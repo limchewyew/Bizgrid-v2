@@ -1,85 +1,107 @@
 // Initialize the map
 let map;
 let markers = [];
+let mapInitialized = false;
 
 async function initMap() {
-    // Load data from Google Sheets first
-    await loadCompaniesFromGoogleSheets();
+    try {
+        console.log('🗺️ Starting map initialization...');
+        
+        // Load data from Google Sheets
+        console.log('⏳ Waiting for data to load...');
+        await loadCompaniesFromGoogleSheets();
+        
+        console.log(`📍 Companies loaded: ${companiesData.length}`);
+        
+        // Only initialize map if we have data
+        if (companiesData.length === 0) {
+            console.error('❌ No data available to display');
+            document.getElementById('map').innerHTML = '<p style="padding: 20px; color: red;">⚠️ Error: No companies data loaded. Check console for details.</p>';
+            return;
+        }
 
-    // Create map centered on world
-    map = L.map('map').setView([20, 0], 3);
+        // Create map centered on world
+        map = L.map('map').setView([20, 0], 3);
+        mapInitialized = true;
+        console.log('✅ Map created');
 
-    // Add tile layer
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors',
-        maxZoom: 19,
-        minZoom: 2
-    }).addTo(map);
+        // Add tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 19,
+            minZoom: 2
+        }).addTo(map);
+        console.log('✅ Tiles loaded');
 
-    // Add company markers
-    addCompanyMarkers();
-
-    // Show loading message
-    showLoadingMessage();
-}
-
-function showLoadingMessage() {
-    if (companiesData.length === 0) {
-        console.warn('No companies data loaded');
-    } else {
-        console.log(`Map loaded with ${companiesData.length} companies`);
+        // Add company markers
+        addCompanyMarkers();
+        console.log('✅ Markers added');
+        
+    } catch (error) {
+        console.error('❌ Error initializing map:', error);
     }
 }
 
 function addCompanyMarkers() {
+    if (companiesData.length === 0) {
+        console.warn('⚠️ No companies to display');
+        return;
+    }
+
     companiesData.forEach(company => {
-        // Create custom HTML for the bubble
-        const bubbleHTML = `
-            <div class="company-bubble ${company.bubbleColor}">
-                ${company.logo}
-            </div>
-        `;
+        try {
+            // Create custom HTML for the bubble
+            const bubbleHTML = `
+                <div class="company-bubble ${company.bubbleColor}">
+                    ${company.logo}
+                </div>
+            `;
 
-        // Create custom icon
-        const customIcon = L.divIcon({
-            html: bubbleHTML,
-            iconSize: [50, 50],
-            className: 'custom-marker'
-        });
+            // Create custom icon
+            const customIcon = L.divIcon({
+                html: bubbleHTML,
+                iconSize: [50, 50],
+                className: 'custom-marker'
+            });
 
-        // Create marker
-        const marker = L.marker([company.latitude, company.longitude], {
-            icon: customIcon
-        }).addTo(map);
+            // Create marker
+            const marker = L.marker([company.latitude, company.longitude], {
+                icon: customIcon
+            }).addTo(map);
 
-        // Create tooltip content
-        const tooltipContent = createTooltipContent(company);
+            // Create tooltip content
+            const tooltipContent = createTooltipContent(company);
 
-        // Bind popup to marker
-        marker.bindPopup(tooltipContent, {
-            className: 'company-popup',
-            maxWidth: 300,
-            closeButton: false
-        });
+            // Bind popup to marker
+            marker.bindPopup(tooltipContent, {
+                className: 'company-popup',
+                maxWidth: 300,
+                closeButton: false
+            });
 
-        // Show tooltip on hover
-        marker.on('mouseover', function() {
-            this.openPopup();
-        });
+            // Show tooltip on hover
+            marker.on('mouseover', function() {
+                this.openPopup();
+            });
 
-        marker.on('mouseout', function() {
-            this.closePopup();
-        });
+            marker.on('mouseout', function() {
+                this.closePopup();
+            });
 
-        // Click to open website in new tab
-        marker.on('click', function() {
-            if (company.website && company.website !== '#') {
-                window.open(company.website, '_blank');
-            }
-        });
+            // Click to open website
+            marker.on('click', function() {
+                if (company.website && company.website !== '#') {
+                    window.open(company.website, '_blank');
+                }
+            });
 
-        markers.push(marker);
+            markers.push(marker);
+        } catch (error) {
+            console.error(`Error adding marker for ${company.name}:`, error);
+        }
     });
+    
+    console.log(`✅ Added ${markers.length} markers to map`);
 }
 
 function createTooltipContent(company) {
@@ -126,11 +148,14 @@ function createTooltipContent(company) {
 }
 
 // Initialize map when page loads
-document.addEventListener('DOMContentLoaded', initMap);
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🔄 Page loaded, initializing...');
+    initMap();
+});
 
 // Handle window resize
 window.addEventListener('resize', function() {
-    if (map) {
+    if (map && mapInitialized) {
         map.invalidateSize();
     }
 });
