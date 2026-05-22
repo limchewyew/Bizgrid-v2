@@ -2,7 +2,10 @@
 let map;
 let markers = [];
 
-function initMap() {
+async function initMap() {
+    // Load data from Google Sheets first
+    await loadCompaniesFromGoogleSheets();
+
     // Create map centered on world
     map = L.map('map').setView([20, 0], 3);
 
@@ -15,6 +18,17 @@ function initMap() {
 
     // Add company markers
     addCompanyMarkers();
+
+    // Show loading message
+    showLoadingMessage();
+}
+
+function showLoadingMessage() {
+    if (companiesData.length === 0) {
+        console.warn('No companies data loaded');
+    } else {
+        console.log(`Map loaded with ${companiesData.length} companies`);
+    }
 }
 
 function addCompanyMarkers() {
@@ -22,7 +36,7 @@ function addCompanyMarkers() {
         // Create custom HTML for the bubble
         const bubbleHTML = `
             <div class="company-bubble ${company.bubbleColor}">
-                ${company.name.split(' ')[0][0]}${company.name.split(' ')[1][0]}
+                ${company.logo}
             </div>
         `;
 
@@ -57,9 +71,11 @@ function addCompanyMarkers() {
             this.closePopup();
         });
 
-        // Click to open in new tab
+        // Click to open website in new tab
         marker.on('click', function() {
-            window.open(company.website, '_blank');
+            if (company.website && company.website !== '#') {
+                window.open(company.website, '_blank');
+            }
         });
 
         markers.push(marker);
@@ -67,6 +83,12 @@ function addCompanyMarkers() {
 }
 
 function createTooltipContent(company) {
+    const linkedinLink = company.linkedin && company.linkedin !== '#' ? 
+        `<a href="${company.linkedin}" target="_blank">LinkedIn</a>` : '';
+    
+    const websiteLink = company.website && company.website !== '#' ? 
+        `<a href="${company.website}" target="_blank">Visit Website →</a>` : '';
+
     return `
         <div class="company-tooltip">
             <div class="tooltip-company-name">${company.name}</div>
@@ -82,21 +104,22 @@ function createTooltipContent(company) {
             
             <div class="tooltip-row">
                 <span class="tooltip-label">👥 Employees:</span>
-                <span class="tooltip-value">${company.employees.toLocaleString()}</span>
+                <span class="tooltip-value">${company.employees ? company.employees.toLocaleString() : 'N/A'}</span>
             </div>
             
             <div class="tooltip-row">
                 <span class="tooltip-label">📅 Founded:</span>
-                <span class="tooltip-value">${company.founded}</span>
+                <span class="tooltip-value">${company.founded || 'N/A'}</span>
             </div>
             
             <div class="tooltip-row">
                 <span class="tooltip-label">💰 Revenue:</span>
-                <span class="tooltip-value">${company.revenueRange}</span>
+                <span class="tooltip-value">${company.revenueRange || 'N/A'}</span>
             </div>
             
             <div class="tooltip-website">
-                <a href="${company.website}" target="_blank">Visit Website →</a>
+                ${websiteLink}
+                ${linkedinLink ? ' | ' + linkedinLink : ''}
             </div>
         </div>
     `;
