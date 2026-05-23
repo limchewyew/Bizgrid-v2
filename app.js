@@ -42,6 +42,10 @@ async function initMap() {
     }
 }
 
+function isImageUrl(url) {
+    return typeof url === 'string' && (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:image'));
+}
+
 function addCompanyMarkers() {
     if (companiesData.length === 0) {
         console.warn('⚠️ No companies to display');
@@ -50,17 +54,25 @@ function addCompanyMarkers() {
 
     companiesData.forEach(company => {
         try {
+            // Render logo as an image if possible
+            let logoHTML = '';
+            if (isImageUrl(company.logo)) {
+                logoHTML = `<img src="${company.logo}" alt="logo" style="width:70%;height:70%;object-fit:contain;border-radius:50%;">`;
+            } else {
+                logoHTML = `<span>${company.logo}</span>`;
+            }
+
             // Create custom HTML for the bubble
             const bubbleHTML = `
                 <div class="company-bubble ${company.bubbleColor}">
-                    ${company.logo}
+                    ${logoHTML}
                 </div>
             `;
 
-            // Create custom icon
+            // Create custom icon (smaller size)
             const customIcon = L.divIcon({
                 html: bubbleHTML,
-                iconSize: [50, 50],
+                iconSize: [32, 32],
                 className: 'custom-marker'
             });
 
