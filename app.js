@@ -3,6 +3,9 @@ let map;
 let markers = [];
 let mapInitialized = false;
 let isRefreshing = false;
+let markerData = []; // Store company data for search
+let activeMarker = null; // Track the currently active (clicked) marker
+let searchResults = []; // Store search result marker indices
 
 async function initMap() {
     try {
@@ -53,6 +56,8 @@ function clearMap() {
         map.removeLayer(marker);
     });
     markers = [];
+    markerData = [];
+    activeMarker = null;
     console.log('✅ Markers cleared');
 }
 
@@ -62,7 +67,7 @@ function addCompanyMarkers() {
         return;
     }
 
-    companiesData.forEach(company => {
+    companiesData.forEach((company, index) => {
         try {
             // Render logo as an image if possible
             let logoHTML = '';
@@ -91,6 +96,10 @@ function addCompanyMarkers() {
                 icon: customIcon
             }).addTo(map);
 
+            // Store marker data for search
+            marker.companyIndex = index;
+            marker.companyData = company;
+
             // Create tooltip content
             const tooltipContent = createTooltipContent(company);
 
@@ -103,21 +112,46 @@ function addCompanyMarkers() {
 
             // Show tooltip on hover
             marker.on('mouseover', function() {
-                this.openPopup();
-            });
-
-            marker.on('mouseout', function() {
-                this.closePopup();
-            });
-
-            // Click to open website
-            marker.on('click', function() {
-                if (company.website && company.website !== '#') {
-                    window.open(company.website, '_blank');
+                if (activeMarker !== this) {
+                    this.openPopup();
                 }
             });
 
+            marker.on('mouseout', function() {
+                if (activeMarker !== this) {
+                    this.closePopup();
+                }
+            });
+
+            // Keep tooltip open on click (don't navigate)
+            marker.on('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Close previous active marker
+                if (activeMarker && activeMarker !== this) {
+                    activeMarker.closePopup();
+                    const oldBubble = activeMarker._icon?.querySelector('.company-bubble');
+                    if (oldBubble) {
+                        oldBubble.classList.remove('highlighted');
+                    }
+                }
+                
+                // Open new marker popup
+                this.openPopup();
+                activeMarker = this;
+                
+                // Highlight the bubble
+                const bubble = this._icon?.querySelector('.company-bubble');
+                if (bubble) {
+                    bubble.classList.add('highlighted');
+                }
+                
+                console.log(`✅ Company selected: ${company.name}`);
+            });
+
             markers.push(marker);
+            markerData.push(company);
         } catch (error) {
             console.error(`Error adding marker for ${company.name}:`, error);
         }
@@ -128,10 +162,10 @@ function addCompanyMarkers() {
 
 function createTooltipContent(company) {
     const linkedinLink = company.linkedin && company.linkedin !== '#' ? 
-        `<a href="${company.linkedin}" target="_blank">LinkedIn</a>` : '';
+        `<a href="${company.linkedin}" target="_blank" onclick="event.stopPropagation()">LinkedIn</a>` : '';
     
     const websiteLink = company.website && company.website !== '#' ? 
-        `<a href="${company.website}" target="_blank">Visit Website →</a>` : '';
+        `<a href="${company.website}" target="_blank" onclick="event.stopPropagation()">Visit Website →</a>` : '';
 
     return `
         <div class="company-tooltip">
@@ -169,6 +203,56 @@ function createTooltipContent(company) {
     `;
 }
 
+// Search functionality
+function searchCompanies(query) {
+    const searchInput = document.getElementById('searchInput');
+    query = query.toLowerCase().trim();
+    
+    // Clear previous highlights
+    markers.forEach(marker => {
+        const bubble = marker._icon?.querySelector('.company-bubble');
+        if (bubble) {
+            bubble.classList.remove('highlighted');
+        }
+    });
+    
+    if (!query) {
+        console.log('🔍 Search cleared');
+        searchResults = [];
+        return;
+    }
+
+    // Search through companies
+    searchResults = [];
+    markerData.forEach((company, index) => {
+        const nameMatch = company.name.toLowerCase().includes(query);
+        const cityMatch = company.city.toLowerCase().includes(query);
+        const countryMatch = company.country.toLowerCase().includes(query);
+        
+        if (nameMatch || cityMatch || countryMatch) {
+            searchResults.push(index);
+            // Highlight matching bubble
+            const bubble = markers[index]._icon?.querySelector('.company-bubble');
+            if (bubble) {
+                bubble.classList.add('highlighted');
+            }
+        }
+    });
+
+    console.log(`🔍 Found ${searchResults.length} matching companies`);
+    
+    // If only one result, center on it
+    if (searchResults.length === 1) {
+        const markerIndex = searchResults[0];
+        const marker = markers[markerIndex];
+        map.setView(marker.getLatLng(), 6);
+    } else if (searchResults.length > 1) {
+        // Fit map to all results
+        const group = new L.featureGroup(searchResults.map(i => markers[i]));
+        map.fitBounds(group.getBounds(), { padding: [50, 50] });
+    }
+}
+
 // Refresh data on demand
 async function refreshData() {
     if (isRefreshing) {
@@ -185,8 +269,9 @@ async function refreshData() {
         refreshBtn.classList.add('loading');
         refreshBtn.textContent = '⏳ Loading...';
 
-        // Clear existing markers
+        // Clear existing markers and search
         clearMap();
+        document.getElementById('searchInput').value = '';
 
         // Reload data from Google Sheets
         console.log('⏳ Fetching updated data...');
@@ -235,6 +320,27 @@ document.addEventListener('DOMContentLoaded', function() {
         refreshBtn.addEventListener('click', refreshData);
         console.log('✅ Refresh button listener attached');
     }
+
+    // Add search input event listener
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            searchCompanies(e.target.value);
+        });
+        console.log('✅ Search input listener attached');
+    }
+
+    // Close active marker when clicking on map
+    map.on('click', function() {
+        if (activeMarker) {
+            activeMarker.closePopup();
+            const bubble = activeMarker._icon?.querySelector('.company-bubble');
+            if (bubble) {
+                bubble.classList.remove('highlighted');
+            }
+            activeMarker = null;
+        }
+    });
 });
 
 // Handle window resize
