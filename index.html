@@ -13,15 +13,21 @@
 <body>
     <div class="container">
         <header>
-            <h1>🌍 Global Company Headquarters</h1>
-            <p>Explore companies around the world. Hover over bubbles for details.</p>
-            <button id="refreshBtn" class="refresh-btn" title="Refresh data">🔄 Refresh</button>
+            <div class="header-left">
+                <h1>🌍 Global Company Headquarters</h1>
+                <p>Explore companies around the world. Click on bubbles to keep details visible.</p>
+            </div>
+            
+            <div class="header-controls">
+                <input type="text" id="searchInput" class="search-input" placeholder="🔍 Search companies, cities, countries...">
+                <button id="refreshBtn" class="refresh-btn" title="Refresh data">🔄 Refresh</button>
+            </div>
         </header>
         
         <div id="map" class="map-container"></div>
         
         <div class="info-panel">
-            <p>💡 Tip: Hover over the colored bubbles to see company details</p>
+            <p>💡 Tip: Hover to preview, click to keep visible. Use the search bar to find companies!</p>
         </div>
     </div>
 
