@@ -28,17 +28,47 @@ header {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 20px;
 }
 
-header h1 {
+.header-left {
+    flex: 1;
+}
+
+.header-left h1 {
     font-size: 28px;
     margin-bottom: 5px;
     font-weight: 600;
 }
 
-header p {
+.header-left p {
     font-size: 14px;
     opacity: 0.9;
+}
+
+.header-controls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.search-input {
+    padding: 10px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    width: 250px;
+    transition: all 0.3s ease;
+    outline: none;
+}
+
+.search-input:focus {
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+    transform: scale(1.02);
+}
+
+.search-input::placeholder {
+    color: #999;
 }
 
 .refresh-btn {
@@ -140,6 +170,12 @@ header p {
     color: #1a237e !important;
 }
 
+.company-bubble.highlighted {
+    border-color: #ff6b6b;
+    background: #ffefef !important;
+    box-shadow: 0 0 15px rgba(255, 107, 107, 0.5);
+}
+
 .company-tooltip {
     background: white;
     border-radius: 12px;
@@ -210,6 +246,7 @@ header p {
     font-size: 12px;
     font-weight: 600;
     transition: all 0.3s ease;
+    cursor: pointer;
 }
 
 .tooltip-website a:hover {
@@ -227,22 +264,39 @@ header p {
 }
 
 /* Responsive Design */
+@media (max-width: 1024px) {
+    .search-input {
+        width: 200px;
+    }
+}
+
 @media (max-width: 768px) {
     header {
         flex-direction: column;
         gap: 15px;
+        align-items: stretch;
     }
 
-    header h1 {
+    .header-left h1 {
         font-size: 22px;
     }
 
-    header p {
+    .header-left p {
         font-size: 12px;
     }
 
+    .header-controls {
+        width: 100%;
+        gap: 10px;
+    }
+
+    .search-input {
+        flex: 1;
+        width: auto;
+    }
+
     .refresh-btn {
-        padding: 6px 12px;
+        padding: 8px 12px;
         font-size: 12px;
     }
 
@@ -268,17 +322,22 @@ header p {
         padding: 15px;
     }
 
-    header h1 {
+    .header-left h1 {
         font-size: 18px;
         margin-bottom: 8px;
     }
 
-    header p {
+    .header-left p {
         font-size: 11px;
     }
 
+    .search-input {
+        font-size: 12px;
+        padding: 8px 12px;
+    }
+
     .refresh-btn {
-        padding: 5px 10px;
+        padding: 6px 10px;
         font-size: 11px;
     }
 
@@ -288,6 +347,7 @@ header p {
         font-size: 9px;
         border-width: 2px;
     }
+    
     .info-panel {
         padding: 10px 15px;
         font-size: 12px;
