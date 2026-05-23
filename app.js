@@ -2,6 +2,7 @@
 let map;
 let markers = [];
 let mapInitialized = false;
+let isRefreshing = false;
 
 async function initMap() {
     try {
@@ -44,6 +45,15 @@ async function initMap() {
 
 function isImageUrl(url) {
     return typeof url === 'string' && (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:image'));
+}
+
+function clearMap() {
+    console.log('🧹 Clearing markers...');
+    markers.forEach(marker => {
+        map.removeLayer(marker);
+    });
+    markers = [];
+    console.log('✅ Markers cleared');
 }
 
 function addCompanyMarkers() {
@@ -159,10 +169,72 @@ function createTooltipContent(company) {
     `;
 }
 
+// Refresh data on demand
+async function refreshData() {
+    if (isRefreshing) {
+        console.warn('⚠️ Refresh already in progress');
+        return;
+    }
+
+    try {
+        isRefreshing = true;
+        const refreshBtn = document.getElementById('refreshBtn');
+        
+        console.log('🔄 Starting data refresh...');
+        refreshBtn.disabled = true;
+        refreshBtn.classList.add('loading');
+        refreshBtn.textContent = '⏳ Loading...';
+
+        // Clear existing markers
+        clearMap();
+
+        // Reload data from Google Sheets
+        console.log('⏳ Fetching updated data...');
+        await loadCompaniesFromGoogleSheets();
+
+        if (companiesData.length === 0) {
+            console.error('❌ No data received from refresh');
+            alert('❌ Error: No companies data loaded. Check console for details.');
+            refreshBtn.textContent = '🔄 Refresh';
+            refreshBtn.disabled = false;
+            refreshBtn.classList.remove('loading');
+            isRefreshing = false;
+            return;
+        }
+
+        // Re-add markers
+        addCompanyMarkers();
+
+        console.log('✅ Refresh completed successfully');
+        refreshBtn.textContent = '🔄 Refresh';
+        refreshBtn.disabled = false;
+        refreshBtn.classList.remove('loading');
+
+    } catch (error) {
+        console.error('❌ Error refreshing data:', error);
+        alert('❌ Error refreshing data. Please try again.');
+        
+        const refreshBtn = document.getElementById('refreshBtn');
+        refreshBtn.textContent = '🔄 Refresh';
+        refreshBtn.disabled = false;
+        refreshBtn.classList.remove('loading');
+        
+    } finally {
+        isRefreshing = false;
+    }
+}
+
 // Initialize map when page loads
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🔄 Page loaded, initializing...');
     initMap();
+
+    // Add refresh button event listener
+    const refreshBtn = document.getElementById('refreshBtn');
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', refreshData);
+        console.log('✅ Refresh button listener attached');
+    }
 });
 
 // Handle window resize
