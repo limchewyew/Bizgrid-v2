@@ -74,7 +74,6 @@ function parseCSV(csvText) {
 // Parse CSV data into JSON objects
 function parseCSVData(csvText) {
     console.log('📊 Parsing CSV...');
-    console.log('First 500 chars:', csvText.substring(0, 500));
     
     const lines = parseCSV(csvText);
     
@@ -82,59 +81,87 @@ function parseCSVData(csvText) {
         throw new Error(`CSV has only ${lines.length} line(s), need at least 2`);
     }
 
+    // Clean headers for bulletproof comparison: lowercase and trim trailing spaces
     const headers = lines[0].map(h => h.toLowerCase().trim());
-    console.log('✅ Headers found:', headers);
+    console.log('✅ Headers found in your Google Sheet:', headers);
+
+    // Map your exact columns directly
+    const logoIdx = headers.indexOf('logo');
+    const companyNameIdx = headers.indexOf('company name');
+    const countryIdx = headers.indexOf('country');
+    const descriptionIdx = headers.indexOf('description');
+    const linkedinIdx = headers.indexOf('linkedin');
+    const websiteIdx = headers.indexOf('website');
+    const employeesIdx = headers.indexOf('number of employees');
+    const foundedIdx = headers.indexOf('founded year');
+    const revenueIdx = headers.indexOf('revenue range');
+    const coordinatesIdx = headers.indexOf('coordinates');
+
+    // Debugging index check
+    console.log('🔍 Matching column indices:', { companyNameIdx, coordinatesIdx });
+
+    if (companyNameIdx === -1 || coordinatesIdx === -1) {
+        throw new Error(`Critical Columns Missing! The parser could not find "Company Name" or "Coordinates". Please ensure headers match exactly.`);
+    }
 
     const data = [];
 
     for (let i = 1; i < lines.length; i++) {
         const cells = lines[i];
-        if (cells.length === 0 || !cells[0]) continue;
+        
+        // Skip empty rows or rows missing a company name
+        if (cells.length === 0 || !cells[companyNameIdx]) continue;
 
-        const row = {};
-        headers.forEach((header, index) => {
-            row[header] = cells[index] || '';
-        });
+        const companyName = cells[companyNameIdx].trim();
+        const rawCoordinates = cells[coordinatesIdx]?.trim() || '';
 
-        // Parse coordinates
+        // Parse coordinates safely ("lat, long")
         let latitude = null, longitude = null;
-        if (row.coordinates) {
-            const coords = row.coordinates.split(',').map(c => parseFloat(c.trim()));
+        if (rawCoordinates) {
+            const coords = rawCoordinates.split(',').map(c => parseFloat(c.trim()));
             if (coords.length === 2 && !isNaN(coords[0]) && !isNaN(coords[1])) {
                 latitude = coords[0];
                 longitude = coords[1];
             }
         }
 
-        // Add company if valid
-        if (latitude !== null && longitude !== null && row['company name']) {
-            const companyName = row['company name'].trim();
-            const logo = row['logo'] ? row['logo'].trim() : companyName.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
+        // Only add to map if valid coordinate geometry is found
+        if (latitude !== null && longitude !== null && companyName) {
+            let logo = logoIdx !== -1 ? cells[logoIdx].trim() : '';
+            if (!logo) {
+                // Generates fallback initials if logo link cell is empty
+                logo = companyName.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
+            }
 
             const company = {
                 id: data.length + 1,
                 name: companyName,
-                country: row['country'] ? row['country'].trim() : 'Unknown',
-                city: row['city'] ? row['city'].trim() : (row['country'] ? row['country'].trim() : 'Unknown'),
+                country: countryIdx !== -1 ? cells[countryIdx].trim() : 'Unknown',
+                city: countryIdx !== -1 ? cells[countryIdx].trim() : 'Unknown', // Defaults city display to country
                 latitude: latitude,
                 longitude: longitude,
-                description: row['description'] ? row['description'].trim() : 'No description',
-                website: row['website'] ? row['website'].trim() : '#',
-                linkedin: row['linkedin'] ? row['linkedin'].trim() : '#',
-                employees: row['number of employees'] ? row['number of employees'].trim() : 'N/A',
-                founded: row['founded year'] ? parseInt(row['founded year']) : 0,
-                revenueRange: row['revenue range'] ? row['revenue range'].trim() : 'N/A',
+                description: descriptionIdx !== -1 ? cells[descriptionIdx].trim() : 'No description',
+                website: websiteIdx !== -1 ? cells[websiteIdx].trim() : '#',
+                linkedin: linkedinIdx !== -1 ? cells[linkedinIdx].trim() : '#',
+                employees: employeesIdx !== -1 ? cells[employeesIdx].trim() : 'N/A',
+                founded: foundedIdx !== -1 ? parseInt(cells[foundedIdx]) || 0 : 0,
+                revenueRange: revenueIdx !== -1 ? cells[revenueIdx].trim() : 'N/A',
                 logo: logo,
                 bubbleColor: bubbleColors[data.length % bubbleColors.length]
             };
 
             data.push(company);
+            console.log(`✅ Fully Parsed: ${companyName} at (${latitude}, ${longitude})`);
+        } else {
+            if (companyName) {
+                console.warn(`⚠️ Skipped line ${i + 1} (${companyName}): Invalid coordinates layout -> "${rawCoordinates}"`);
+            }
         }
     }
 
-    console.log(`📍 Total companies parsed: ${data.length}`);
+    console.log(`📍 Total companies successfully loaded: ${data.length}`);
     if (data.length === 0) {
-        throw new Error('No valid companies found in CSV. Check coordinates and company names.');
+        throw new Error('No valid companies parsed. Ensure coordinates inside rows match standard decimal format (e.g., 1.3521, 103.8198).');
     }
     return data;
 }
@@ -144,7 +171,6 @@ async function loadCompaniesFromGoogleSheets() {
     try {
         console.log('🚀 Starting native Google Sheets data load...');
         
-        // Direct CSV export URL - Google natively handles CORS for this endpoint on public sheets
         const csvUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv`;
         console.log('📥 Native CSV URL:', csvUrl);
 
@@ -158,27 +184,22 @@ async function loadCompaniesFromGoogleSheets() {
         const csvText = await response.text();
         console.log(`📥 Received ${csvText.length} characters`);
         
-        // Check if returned content looks like HTML instead of CSV (e.g., Google login page redirection)
+        // Prevent parsing if Google outputs standard HTML redirects (e.g. login block screens)
         if (csvText.trim().startsWith('<!DOCTYPE html>')) {
-            throw new Error('Google returned HTML instead of CSV data. Ensure your sheet sharing settings are set to "Anyone with the link can view".');
+            throw new Error('Google returned HTML instead of CSV data. Verify your sheet sharing access is set to "Anyone with the link can view".');
         }
 
         if (!csvText || csvText.length < 50) {
-            throw new Error('Response data from Google Sheets was too short or empty.');
+            throw new Error('Response data from Google Sheets was empty.');
         }
         
         companiesData = parseCSVData(csvText);
-        console.log(`✅✅✅ SUCCESS! Loaded ${companiesData.length} companies natively from Google Sheets.`);
+        console.log(`✅✅✅ SUCCESS! Map dataset loaded cleanly.`);
         return companiesData;
 
     } catch (error) {
-        console.error('❌❌❌ NATIVE FETCH FAILED!');
+        console.error('❌❌❌ DATA RENDER CRITICAL FAILURE!');
         console.error('Error Details:', error.message);
-        console.error('\n📋 REMINDER CHECKLIST:');
-        console.error('1. Go to your Google Sheet -> Click "Share" -> Change General Access to "Anyone with the link can view".');
-        console.error('2. Ensure your headers exactly match your row parser variables.');
-        
-        // Clear global array and re-throw the error so app.js can stop rendering cleanly
         companiesData = [];
         throw error;
     }
