@@ -78,7 +78,7 @@ function parseCSVData(csvText) {
                 description: row['description'] ? row['description'].trim() : 'No description',
                 website: row['website'] ? row['website'].trim() : '#',
                 linkedin: row['linkedin'] ? row['linkedin'].trim() : '#',
-                employees: row['number of employees'] ? parseInt(row['number of employees']) : 0,
+                employees: row['number of employees'] ? row['number of employees'].trim() : 'N/A',
                 founded: row['founded year'] ? parseInt(row['founded year']) : 0,
                 revenueRange: row['revenue range'] ? row['revenue range'].trim() : 'N/A',
                 logo: logo,
