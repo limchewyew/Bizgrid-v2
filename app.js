@@ -193,17 +193,17 @@ function createTooltipContent(company) {
             <div class="tooltip-divider"></div>
             
             <div class="tooltip-row">
-                <span class="tooltip-label">👥 Employees:</span>
+                <span class="tooltip-label"> Employees:</span>
                 <span class="tooltip-value">${company.employees || 'N/A'}</span>
             </div>
             
             <div class="tooltip-row">
-                <span class="tooltip-label">📅 Founded:</span>
+                <span class="tooltip-label"> Founded:</span>
                 <span class="tooltip-value">${company.founded || 'N/A'}</span>
             </div>
             
             <div class="tooltip-row">
-                <span class="tooltip-label">💰 Revenue:</span>
+                <span class="tooltip-label"> Revenue:</span>
                 <span class="tooltip-value">${company.revenueRange || 'N/A'}</span>
             </div>
             
