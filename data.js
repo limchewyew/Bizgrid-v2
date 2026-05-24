@@ -8,43 +8,88 @@ const bubbleColors = [
     'bubble-bg-5', 'bubble-bg-6', 'bubble-bg-7', 'bubble-bg-8'
 ];
 
-// Parse CSV data
-function parseCSVData(csvText) {
-    console.log('📊 Parsing CSV...');
-    console.log('First 500 chars:', csvText.substring(0, 500));
-    
-    const lines = csvText.trim().split('\n');
-    
-    if (lines.length < 2) {
-        throw new Error(`CSV has only ${lines.length} line(s), need at least 2`);
+// Properly parse CSV with quoted field support
+function parseCSV(csvText) {
+    const lines = [];
+    let currentLine = '';
+    let insideQuotes = false;
+
+    for (let i = 0; i < csvText.length; i++) {
+        const char = csvText[i];
+        const nextChar = csvText[i + 1];
+
+        if (char === '"') {
+            if (insideQuotes && nextChar === '"') {
+                // Escaped quote
+                currentLine += '"';
+                i++; // Skip next quote
+            } else {
+                // Toggle quote state
+                insideQuotes = !insideQuotes;
+            }
+        } else if (char === '\n' && !insideQuotes) {
+            // End of line
+            if (currentLine.trim()) {
+                lines.push(currentLine);
+            }
+            currentLine = '';
+        } else {
+            currentLine += char;
+        }
     }
 
-    const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
-    console.log('✅ Headers found:', headers);
+    if (currentLine.trim()) {
+        lines.push(currentLine);
+    }
 
-    const data = [];
-
-    for (let i = 1; i < lines.length; i++) {
-        const line = lines[i].trim();
-        if (!line) continue;
-
-        // Parse CSV with quote handling
+    return lines.map(line => {
         const cells = [];
         let current = '';
         let inQuotes = false;
 
-        for (let j = 0; j < line.length; j++) {
-            const char = line[j];
+        for (let i = 0; i < line.length; i++) {
+            const char = line[i];
+            const nextChar = line[i + 1];
+
             if (char === '"') {
-                inQuotes = !inQuotes;
+                if (inQuotes && nextChar === '"') {
+                    current += '"';
+                    i++;
+                } else {
+                    inQuotes = !inQuotes;
+                }
             } else if (char === ',' && !inQuotes) {
-                cells.push(current.trim().replace(/^"|"$/g, ''));
+                cells.push(current.trim());
                 current = '';
             } else {
                 current += char;
             }
         }
-        cells.push(current.trim().replace(/^"|"$/g, ''));
+        cells.push(current.trim());
+
+        return cells;
+    });
+}
+
+// Parse CSV data
+function parseCSVData(csvText) {
+    console.log('📊 Parsing CSV...');
+    console.log('First 500 chars:', csvText.substring(0, 500));
+    
+    const lines = parseCSV(csvText);
+    
+    if (lines.length < 2) {
+        throw new Error(`CSV has only ${lines.length} line(s), need at least 2`);
+    }
+
+    const headers = lines[0].map(h => h.toLowerCase());
+    console.log('✅ Headers found:', headers);
+
+    const data = [];
+
+    for (let i = 1; i < lines.length; i++) {
+        const cells = lines[i];
+        if (cells.length === 0) continue;
 
         const row = {};
         headers.forEach((header, index) => {
