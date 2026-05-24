@@ -5,8 +5,8 @@
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    background: #0d1117;
     height: 100vh;
     overflow: hidden;
 }
@@ -16,14 +16,15 @@ body {
     height: 100vh;
     display: flex;
     flex-direction: column;
-    background: #f0f2f5;
+    background: #0d1117;
 }
 
+/* Sleek Minimalist Dark Header */
 header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 20px 30px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    background: #0d1117;
+    color: #f0f6fc;
+    padding: 14px 24px;
+    border-bottom: 1px solid #30363d;
     z-index: 100;
     display: flex;
     justify-content: space-between;
@@ -36,61 +37,68 @@ header {
 }
 
 .header-left h1 {
-    font-size: 28px;
-    margin-bottom: 5px;
+    font-size: 16px;
     font-weight: 600;
-}
-
-.header-left p {
-    font-size: 14px;
-    opacity: 0.9;
+    letter-spacing: -0.2px;
+    text-transform: uppercase;
+    color: #f0f6fc;
 }
 
 .header-controls {
     display: flex;
-    gap: 10px;
+    gap: 12px;
     align-items: center;
 }
 
+/* Modern Input Box styling */
 .search-input {
-    padding: 10px 16px;
-    border: none;
+    background: #161b22;
+    color: #f0f6fc;
+    padding: 6px 12px;
+    border: 1px solid #30363d;
     border-radius: 6px;
-    font-size: 14px;
-    width: 250px;
-    transition: all 0.3s ease;
+    font-size: 13px;
+    width: 240px;
+    transition: all 0.2s ease;
     outline: none;
 }
 
 .search-input:focus {
-    box-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
-    transform: scale(1.02);
+    border-color: #58a6ff;
+    background: #0d1117;
+    box-shadow: 0 0 0 3px rgba(56, 139, 253, 0.15);
 }
 
 .search-input::placeholder {
-    color: #999;
+    color: #8b949e;
 }
 
+/* Professional Outline Button styling */
 .refresh-btn {
-    background: rgba(255, 255, 255, 0.2);
-    color: white;
-    border: 2px solid white;
-    padding: 8px 16px;
+    background: #161b22;
+    color: #c9d1d9;
+    border: 1px solid #30363d;
+    padding: 6px 14px;
     border-radius: 6px;
-    font-size: 14px;
-    font-weight: 600;
+    font-size: 13px;
+    font-weight: 500;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
     white-space: nowrap;
 }
 
 .refresh-btn:hover:not(:disabled) {
-    background: rgba(255, 255, 255, 0.3);
-    transform: scale(1.05);
+    background: #21262d;
+    border-color: #8b949e;
+    color: #f0f6fc;
+}
+
+.refresh-btn:active:not(:disabled) {
+    background: #282e38;
 }
 
 .refresh-btn:disabled {
-    opacity: 0.7;
+    opacity: 0.5;
     cursor: not-allowed;
 }
 
@@ -99,259 +107,192 @@ header {
 }
 
 @keyframes spin {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
 
 .map-container {
     flex: 1;
     position: relative;
-    background: #e8eef7;
+    background: #0d1117;
     height: 100%;
     min-height: 0;
 }
 
 .info-panel {
-    background: white;
-    padding: 15px 30px;
-    border-top: 1px solid #ddd;
+    background: #0d1117;
+    padding: 10px 24px;
+    border-top: 1px solid #30363d;
     text-align: center;
-    font-size: 13px;
-    color: #666;
+    font-size: 12px;
+    color: #8b949e;
 }
 
-/* Leaflet Map Customization */
+/* Dark Mode Leaflet Map Overrides */
 .leaflet-container {
-    background: linear-gradient(135deg, #e8eef7 0%, #f3f4f9 100%);
+    background: #0d1117 !important;
 }
 
 .leaflet-control-attribution {
-    background-color: rgba(255, 255, 255, 0.8) !important;
+    background-color: rgba(13, 17, 23, 0.8) !important;
+    color: #8b949e !important;
 }
 
-/* Company Bubble Styles, now white with navy border */
+.leaflet-control-attribution a {
+    color: #58a6ff !important;
+}
+
+/* Professional Corporate Map Bubbles */
 .company-bubble, .bubble-bg-1, .bubble-bg-2, .bubble-bg-3, .bubble-bg-4, .bubble-bg-5, .bubble-bg-6, .bubble-bg-7, .bubble-bg-8 {
-    width: 32px;
-    height: 32px;
+    width: 28px;
+    height: 28px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    font-weight: bold;
-    background: #fff !important;
-    color: #1a237e !important;
-    font-size: 12px;
-    border: 3px solid #1a237e;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
+    font-weight: 600;
+    background: #161b22 !important;
+    color: #c9d1d9 !important;
+    font-size: 11px;
+    border: 2px solid #30363d;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .company-bubble img {
-    width: 70%;
-    height: 70%;
-    object-fit: contain;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
     border-radius: 50%;
 }
 
 .company-bubble:hover {
-    transform: scale(1.2);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
-}
-
-.company-bubble span {
-    display: inline-block;
-    width: 100%;
-    text-align: center;
-    font-size: 13px;
-    font-weight: bold;
-    color: #1a237e !important;
+    transform: translateY(-2px) scale(1.1);
+    border-color: #58a6ff;
+    color: #f0f6fc !important;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
 }
 
 .company-bubble.highlighted {
-    border-color: #ff6b6b;
-    background: #ffefef !important;
-    box-shadow: 0 0 15px rgba(255, 107, 107, 0.5);
+    border-color: #f78166;
+    background: #21262d !important;
+    box-shadow: 0 0 12px rgba(247, 129, 102, 0.3);
 }
 
+/* Sleek Dark Popup Tooltips */
 .company-tooltip {
-    background: white;
-    border-radius: 12px;
-    padding: 15px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    background: #161b22;
+    color: #c9d1d9;
+    border-radius: 8px;
+    padding: 16px;
+    border: 1px solid #30363d;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4);
     max-width: 280px;
     font-size: 13px;
-    line-height: 1.6;
-    z-index: 1000;
+    line-height: 1.5;
 }
 
 .tooltip-company-name {
     font-weight: 600;
-    font-size: 16px;
-    color: #667eea;
-    margin-bottom: 8px;
+    font-size: 15px;
+    color: #f0f6fc;
+    margin-bottom: 4px;
 }
 
 .tooltip-location {
-    color: #666;
+    color: #8b949e;
     font-size: 12px;
-    margin-bottom: 8px;
+    margin-bottom: 12px;
 }
 
 .tooltip-divider {
     height: 1px;
-    background: #eee;
-    margin: 8px 0;
+    background: #30363d;
+    margin: 12px 0;
 }
 
 .tooltip-row {
     display: flex;
     justify-content: space-between;
     margin: 6px 0;
-    color: #555;
+    color: #8b949e;
 }
 
 .tooltip-label {
-    font-weight: 500;
-    color: #667eea;
+    font-weight: 400;
+    color: #8b949e;
 }
 
 .tooltip-value {
-    color: #333;
-    text-align: right;
+    color: #c9d1d9;
+    font-weight: 500;
 }
 
 .tooltip-description {
-    font-style: italic;
-    color: #777;
-    margin: 8px 0;
+    color: #8b949e;
+    margin: 12px 0;
     font-size: 12px;
+    line-height: 1.5;
 }
 
 .tooltip-website {
-    margin-top: 10px;
-    padding-top: 10px;
-    border-top: 1px solid #eee;
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid #30363d;
+    display: flex;
+    gap: 8px;
 }
 
 .tooltip-website a {
     display: inline-block;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 6px 12px;
+    background: #21262d;
+    color: #c9d1d9;
+    border: 1px solid #30363d;
+    padding: 5px 10px;
     border-radius: 6px;
     text-decoration: none;
     font-size: 12px;
-    font-weight: 600;
-    transition: all 0.3s ease;
+    font-weight: 500;
+    transition: all 0.2s ease;
     cursor: pointer;
 }
 
 .tooltip-website a:hover {
-    transform: scale(1.05);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    background: #30363d;
+    border-color: #8b949e;
+    color: #f0f6fc;
 }
 
-/* Leaflet Popup Customization */
+/* Leaflet Layout Overrides for Dark Theme integration */
 .leaflet-popup-content-wrapper {
-    border-radius: 12px;
+    background: #161b22 !important;
+    border: 1px solid #30363d;
+    padding: 0 !important;
+    border-radius: 8px;
+}
+
+.leaflet-popup-content {
+    margin: 0 !important;
 }
 
 .leaflet-popup-tip {
-    background: white;
+    background: #161b22 !important;
+    border-left: 1px solid #30363d;
+    border-bottom: 1px solid #30363d;
 }
 
-/* Responsive Design */
-@media (max-width: 1024px) {
-    .search-input {
-        width: 200px;
-    }
-}
-
+/* Responsive Structural Refinements */
 @media (max-width: 768px) {
     header {
-        flex-direction: column;
-        gap: 15px;
-        align-items: stretch;
+        padding: 12px 16px;
     }
 
     .header-left h1 {
-        font-size: 22px;
-    }
-
-    .header-left p {
-        font-size: 12px;
-    }
-
-    .header-controls {
-        width: 100%;
-        gap: 10px;
-    }
-
-    .search-input {
-        flex: 1;
-        width: auto;
-    }
-
-    .refresh-btn {
-        padding: 8px 12px;
-        font-size: 12px;
-    }
-
-    .company-bubble, .bubble-bg-1, .bubble-bg-2, .bubble-bg-3, .bubble-bg-4, .bubble-bg-5, .bubble-bg-6, .bubble-bg-7, .bubble-bg-8 {
-        width: 28px;
-        height: 28px;
-        font-size: 10px;
-        border-width: 2px;
-    }
-
-    .company-tooltip {
-        max-width: 220px;
-        font-size: 12px;
-    }
-
-    .tooltip-company-name {
         font-size: 14px;
     }
-}
-
-@media (max-width: 480px) {
-    header {
-        padding: 15px;
-    }
-
-    .header-left h1 {
-        font-size: 18px;
-        margin-bottom: 8px;
-    }
-
-    .header-left p {
-        font-size: 11px;
-    }
 
     .search-input {
-        font-size: 12px;
-        padding: 8px 12px;
-    }
-
-    .refresh-btn {
-        padding: 6px 10px;
-        font-size: 11px;
-    }
-
-    .company-bubble, .bubble-bg-1, .bubble-bg-2, .bubble-bg-3, .bubble-bg-4, .bubble-bg-5, .bubble-bg-6, .bubble-bg-7, .bubble-bg-8 {
-        width: 24px;
-        height: 24px;
-        font-size: 9px;
-        border-width: 2px;
-    }
-    
-    .info-panel {
-        padding: 10px 15px;
-        font-size: 12px;
+        width: 180px;
     }
 }
