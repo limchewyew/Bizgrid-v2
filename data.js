@@ -1,4 +1,4 @@
-// Google Sheets Integration - REAL DATA ONLY, NO FALLBACK
+// Google Sheets Integration - Native Fetch (No Proxies, No Fallback)
 const SHEET_ID = '1R8aekz9Tx803PiGKX9AjB_z8qUD19_JU';
 
 let companiesData = [];
@@ -71,7 +71,7 @@ function parseCSV(csvText) {
     });
 }
 
-// Parse CSV data
+// Parse CSV data into JSON objects
 function parseCSVData(csvText) {
     console.log('📊 Parsing CSV...');
     console.log('First 500 chars:', csvText.substring(0, 500));
@@ -82,21 +82,19 @@ function parseCSVData(csvText) {
         throw new Error(`CSV has only ${lines.length} line(s), need at least 2`);
     }
 
-    const headers = lines[0].map(h => h.toLowerCase());
+    const headers = lines[0].map(h => h.toLowerCase().trim());
     console.log('✅ Headers found:', headers);
 
     const data = [];
 
     for (let i = 1; i < lines.length; i++) {
         const cells = lines[i];
-        if (cells.length === 0) continue;
+        if (cells.length === 0 || !cells[0]) continue;
 
         const row = {};
         headers.forEach((header, index) => {
             row[header] = cells[index] || '';
         });
-
-        console.log(`Row ${i}:`, row);
 
         // Parse coordinates
         let latitude = null, longitude = null;
@@ -117,7 +115,7 @@ function parseCSVData(csvText) {
                 id: data.length + 1,
                 name: companyName,
                 country: row['country'] ? row['country'].trim() : 'Unknown',
-                city: row['country'] ? row['country'].trim() : 'Unknown',
+                city: row['city'] ? row['city'].trim() : (row['country'] ? row['country'].trim() : 'Unknown'),
                 latitude: latitude,
                 longitude: longitude,
                 description: row['description'] ? row['description'].trim() : 'No description',
@@ -131,7 +129,6 @@ function parseCSVData(csvText) {
             };
 
             data.push(company);
-            console.log(`✅ Added: ${companyName} at (${latitude}, ${longitude})`);
         }
     }
 
@@ -142,70 +139,46 @@ function parseCSVData(csvText) {
     return data;
 }
 
-// Load from Google Sheets
+// Load directly from Google Sheets natively (No proxies, no fallbacks)
 async function loadCompaniesFromGoogleSheets() {
     try {
-        console.log('🚀 Starting Google Sheets data load...');
+        console.log('🚀 Starting native Google Sheets data load...');
         
-        // Direct CSV export URL
+        // Direct CSV export URL - Google natively handles CORS for this endpoint on public sheets
         const csvUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv`;
-        console.log('📥 CSV URL:', csvUrl);
+        console.log('📥 Native CSV URL:', csvUrl);
 
-        // Try multiple proxies
-        const proxies = [
-            { name: 'corsproxy.io', url: 'https://corsproxy.io/?' },
-            { name: 'allorigins', url: 'https://api.allorigins.win/raw?url=' },
-            { name: 'thingproxy', url: 'https://thingproxy.freeboard.io/fetch/' }
-        ];
+        const response = await fetch(csvUrl);
+        console.log(`📥 Response status: ${response.status}`);
 
-        for (let proxy of proxies) {
-            try {
-                console.log(`🔗 Trying ${proxy.name}...`);
-                const proxyUrl = proxy.url + encodeURIComponent(csvUrl);
-                console.log(`  Full URL: ${proxyUrl.substring(0, 100)}...`);
-                
-                const response = await fetch(proxyUrl, {
-                    headers: { 'Accept': 'text/csv' }
-                });
-
-                console.log(`  Response status: ${response.status}`);
-
-                if (response.ok) {
-                    const csvText = await response.text();
-                    console.log(`  Received ${csvText.length} characters`);
-                    
-                    if (!csvText || csvText.length < 50) {
-                        console.warn(`  ⚠️ Response too short: ${csvText.length} chars`);
-                        continue;
-                    }
-                    
-                    console.log(`✅ Got valid response from ${proxy.name}`);
-                    companiesData = parseCSVData(csvText);
-
-                    if (companiesData.length > 0) {
-                        console.log(`✅✅✅ SUCCESS! Loaded ${companiesData.length} companies from Google Sheets`);
-                        return companiesData;
-                    }
-                } else {
-                    console.warn(`  ⚠️ HTTP ${response.status}`);
-                }
-            } catch (error) {
-                console.warn(`❌ ${proxy.name} failed:`, error.message);
-            }
+        if (!response.ok) {
+            throw new Error(`HTTP Error Status: ${response.status}`);
         }
 
-        throw new Error('All proxies failed or returned invalid data');
+        const csvText = await response.text();
+        console.log(`📥 Received ${csvText.length} characters`);
+        
+        // Check if returned content looks like HTML instead of CSV (e.g., Google login page redirection)
+        if (csvText.trim().startsWith('<!DOCTYPE html>')) {
+            throw new Error('Google returned HTML instead of CSV data. Ensure your sheet sharing settings are set to "Anyone with the link can view".');
+        }
+
+        if (!csvText || csvText.length < 50) {
+            throw new Error('Response data from Google Sheets was too short or empty.');
+        }
+        
+        companiesData = parseCSVData(csvText);
+        console.log(`✅✅✅ SUCCESS! Loaded ${companiesData.length} companies natively from Google Sheets.`);
+        return companiesData;
 
     } catch (error) {
-        console.error('❌❌❌ FATAL ERROR - Cannot load Google Sheets!');
-        console.error('Error:', error.message);
-        console.error('\n📋 CHECKLIST:');
-        console.error('1. ✓ Is sheet publicly shared? (File → Share → Anyone with link)');
-        console.error('2. ✓ Column names EXACT match: Logo, Company Name, Country, Description, LinkedIn, Website, Number of employees, Founded year, Revenue range, Coordinates');
-        console.error('3. ✓ At least 1 company with valid coordinates (e.g. 37.7749, -122.4194)');
-        console.error('4. ✓ Check Network tab (F12) for CORS errors');
-        console.error('5. ✓ Verify Dataset tab exists and has data');
+        console.error('❌❌❌ NATIVE FETCH FAILED!');
+        console.error('Error Details:', error.message);
+        console.error('\n📋 REMINDER CHECKLIST:');
+        console.error('1. Go to your Google Sheet -> Click "Share" -> Change General Access to "Anyone with the link can view".');
+        console.error('2. Ensure your headers exactly match your row parser variables.');
         
+        // Clear global array and re-throw the error so app.js can stop rendering cleanly
         companiesData = [];
         throw error;
     }
