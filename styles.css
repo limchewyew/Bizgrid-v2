@@ -50,7 +50,7 @@ header {
     align-items: center;
 }
 
-/* Modern Input Box styling */
+/* Modern Input Box Styling */
 .search-input {
     background: #161b22;
     color: #f0f6fc;
@@ -73,7 +73,7 @@ header {
     color: #8b949e;
 }
 
-/* Professional Outline Button styling */
+/* Professional Outline Button Styling */
 .refresh-btn {
     background: #161b22;
     color: #c9d1d9;
@@ -142,7 +142,7 @@ header {
     color: #58a6ff !important;
 }
 
-/* Professional Corporate Map Bubbles */
+/* Professional Corporate Map Bubbles - White with Navy Border */
 .company-bubble, .bubble-bg-1, .bubble-bg-2, .bubble-bg-3, .bubble-bg-4, .bubble-bg-5, .bubble-bg-6, .bubble-bg-7, .bubble-bg-8 {
     width: 28px;
     height: 28px;
@@ -152,10 +152,10 @@ header {
     justify-content: center;
     cursor: pointer;
     font-weight: 600;
-    background: #161b22 !important;
-    color: #c9d1d9 !important;
+    background: #ffffff !important;
+    color: #1a237e !important;
     font-size: 11px;
-    border: 2px solid #30363d;
+    border: 2px solid #1a237e;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -170,14 +170,14 @@ header {
 .company-bubble:hover {
     transform: translateY(-2px) scale(1.1);
     border-color: #58a6ff;
-    color: #f0f6fc !important;
+    color: #58a6ff !important;
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
 }
 
 .company-bubble.highlighted {
     border-color: #f78166;
-    background: #21262d !important;
-    box-shadow: 0 0 12px rgba(247, 129, 102, 0.3);
+    background: #fffefb !important;
+    box-shadow: 0 0 12px rgba(247, 129, 102, 0.4);
 }
 
 /* Sleek Dark Popup Tooltips */
@@ -264,7 +264,7 @@ header {
     color: #f0f6fc;
 }
 
-/* Leaflet Layout Overrides for Dark Theme integration */
+/* Leaflet Layout Overrides for Dark Theme Integration */
 .leaflet-popup-content-wrapper {
     background: #161b22 !important;
     border: 1px solid #30363d;
