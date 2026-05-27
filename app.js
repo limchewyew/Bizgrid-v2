@@ -147,8 +147,7 @@ function addCompanyMarkers() {
 
             // Handle pinning selection on click
             marker.on('click', function(e) {
-                // CRITICAL FIX: Stops the click event from bubbling up to the map layer
-                // which would immediately retrigger the global canvas 'click' listener to close it.
+                // CRITICAL FIX: Stops the click event from bubbling up to the map canvas layer
                 L.DomEvent.stopPropagation(e);
                 
                 // Clear state of any previously clicked marker
@@ -184,12 +183,22 @@ function addCompanyMarkers() {
 }
 
 function createTooltipContent(company) {
-    // Note: Cleaned up inline event listeners since stopPropagation is now handled structurally via Leaflet.
-    const linkedinLink = company.linkedin && company.linkedin !== '#' ? 
-        `<a href="${company.linkedin}" target="_blank">LinkedIn</a>` : '';
+    // AUTOMATIC SEARCH GUARD FOR PROTOCOLS (e.g. fixes missing http/https strings from spreadsheet cells)
+    let websiteUrl = company.website ? company.website.trim() : '#';
+    if (websiteUrl !== '#' && !websiteUrl.startsWith('http://') && !websiteUrl.startsWith('https://')) {
+        websiteUrl = 'https://' + websiteUrl;
+    }
+
+    let linkedinUrl = company.linkedin ? company.linkedin.trim() : '#';
+    if (linkedinUrl !== '#' && !linkedinUrl.startsWith('http://') && !linkedinUrl.startsWith('https://')) {
+        linkedinUrl = 'https://' + linkedinUrl;
+    }
+
+    const linkedinLink = linkedinUrl !== '#' ? 
+        `<a href="${linkedinUrl}" target="_blank">LinkedIn</a>` : '';
     
-    const websiteLink = company.website && company.website !== '#' ? 
-        `<a href="${company.website}" target="_blank">Visit Website →</a>` : '';
+    const websiteLink = websiteUrl !== '#' ? 
+        `<a href="${websiteUrl}" target="_blank">Visit Website →</a>` : '';
 
     return `
         <div class="company-tooltip">
