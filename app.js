@@ -37,6 +37,16 @@ async function initMap() {
         }).addTo(map);
         console.log('✅ Tiles loaded');
 
+        // CRITICAL FIX: Safe click context capture inside Leaflet Tooltip elements.
+        // Prevents Leaflet map handlers from capturing pointer clicks on hyperlinks inside popups.
+        map.on('popupopen', function(e) {
+            const popupNode = e.popup._container;
+            if (popupNode) {
+                L.DomEvent.on(popupNode, 'click', L.DomEvent.stopPropagation);
+                L.DomEvent.on(popupNode, 'mousedown', L.DomEvent.stopPropagation);
+            }
+        });
+
         // Add company markers to the map layer
         addCompanyMarkers();
         console.log('✅ Markers added');
@@ -137,8 +147,9 @@ function addCompanyMarkers() {
 
             // Handle pinning selection on click
             marker.on('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
+                // CRITICAL FIX: Stops the click event from bubbling up to the map layer
+                // which would immediately retrigger the global canvas 'click' listener to close it.
+                L.DomEvent.stopPropagation(e);
                 
                 // Clear state of any previously clicked marker
                 if (activeMarker && activeMarker !== this) {
@@ -173,11 +184,12 @@ function addCompanyMarkers() {
 }
 
 function createTooltipContent(company) {
+    // Note: Cleaned up inline event listeners since stopPropagation is now handled structurally via Leaflet.
     const linkedinLink = company.linkedin && company.linkedin !== '#' ? 
-        `<a href="${company.linkedin}" target="_blank" onclick="event.stopPropagation()">LinkedIn</a>` : '';
+        `<a href="${company.linkedin}" target="_blank">LinkedIn</a>` : '';
     
     const websiteLink = company.website && company.website !== '#' ? 
-        `<a href="${company.website}" target="_blank" onclick="event.stopPropagation()">Visit Website →</a>` : '';
+        `<a href="${company.website}" target="_blank">Visit Website →</a>` : '';
 
     return `
         <div class="company-tooltip">
