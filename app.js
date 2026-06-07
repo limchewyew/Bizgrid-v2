@@ -298,7 +298,7 @@ async function refreshData() {
         console.log('🔄 Starting data refresh...');
         refreshBtn.disabled = true;
         refreshBtn.classList.add('loading');
-        refreshBtn.textContent = '⏳ Loading...';
+        refreshBtn.textContent = 'Loading...';
 
         // Wipe visual markers layer stack array references prior to fetching
         clearMap();
@@ -310,7 +310,7 @@ async function refreshData() {
         if (companiesData.length === 0) {
             console.error('❌ No data received from refresh');
             alert('❌ Error: No companies data loaded. Check console for details.');
-            refreshBtn.textContent = '🔄 Refresh';
+            refreshBtn.textContent = 'Refresh';
             refreshBtn.disabled = false;
             refreshBtn.classList.remove('loading');
             isRefreshing = false;
@@ -321,7 +321,7 @@ async function refreshData() {
         addCompanyMarkers();
 
         console.log('✅ Refresh completed successfully');
-        refreshBtn.textContent = '🔄 Refresh';
+        refreshBtn.textContent = 'Refresh';
         refreshBtn.disabled = false;
         refreshBtn.classList.remove('loading');
 
@@ -330,7 +330,7 @@ async function refreshData() {
         alert('❌ Error refreshing data. Please try again.');
         
         const refreshBtn = document.getElementById('refreshBtn');
-        refreshBtn.textContent = '🔄 Refresh';
+        refreshBtn.textContent = 'Refresh';
         refreshBtn.disabled = false;
         refreshBtn.classList.remove('loading');
         
