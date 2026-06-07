@@ -51,6 +51,9 @@ async function initMap() {
         addCompanyMarkers();
         console.log('✅ Markers added');
         
+        // Update company count
+        updateCompanyCount(companiesData.length);
+        
         // CRITICAL FIX: Safe click binding. Listens to map canvas clicks to deselect active items
         map.on('click', function() {
             if (activeMarker) {
@@ -236,6 +239,13 @@ function createTooltipContent(company) {
     `;
 }
 
+function updateCompanyCount(count) {
+    const countElement = document.getElementById('companyCount');
+    if (countElement) {
+        countElement.textContent = count;
+    }
+}
+
 // Global text queries search mapping matching functionality
 function searchCompanies(query) {
     query = query.toLowerCase().trim();
@@ -251,6 +261,7 @@ function searchCompanies(query) {
     if (!query) {
         console.log('🔍 Search cleared');
         searchResults = [];
+        updateCompanyCount(companiesData.length);
         return;
     }
 
@@ -272,12 +283,13 @@ function searchCompanies(query) {
     });
 
     console.log(`🔍 Found ${searchResults.length} matching companies`);
+    updateCompanyCount(searchResults.length);
     
     // Auto bounding pan zoom adjustment views depending on the volume of match instances
     if (searchResults.length === 1) {
         const markerIndex = searchResults[0];
         const marker = markers[markerIndex];
-        map.setView(marker.getLatLng(), 10);
+        map.setView(marker.getLatLng(), 3);
     } else if (searchResults.length > 1) {
         const group = new L.featureGroup(searchResults.map(i => markers[i]));
         map.fitBounds(group.getBounds(), { padding: [50, 50] });
@@ -319,6 +331,7 @@ async function refreshData() {
 
         // Reassemble canvas marker element stack references
         addCompanyMarkers();
+        updateCompanyCount(companiesData.length);
 
         console.log('✅ Refresh completed successfully');
         refreshBtn.textContent = 'Refresh';
