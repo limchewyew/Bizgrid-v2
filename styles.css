@@ -50,28 +50,24 @@ header {
     align-items: center;
 }
 
-/* Company Count Display */
+/* Company Count Display - Aligned with Search Bar Style */
 .company-count-display {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 12px;
     background: #161b22;
+    color: #c9d1d9;
     border: 1px solid #30363d;
+    padding: 6px 12px;
     border-radius: 6px;
     font-size: 13px;
-}
-
-.count-label {
-    color: #8b949e;
     font-weight: 500;
+    cursor: default;
+    transition: all 0.2s ease;
+    white-space: nowrap;
 }
 
-.count-value {
-    color: #58a6ff;
-    font-weight: 600;
-    min-width: 30px;
-    text-align: center;
+.company-count-display:hover {
+    background: #21262d;
+    border-color: #8b949e;
+    color: #f0f6fc;
 }
 
 /* Modern Input Box Styling */
