@@ -103,12 +103,20 @@ header {
 }
 
 .refresh-btn.loading {
-    animation: spin 1s linear infinite;
+    animation: pulse-outline 0.3s ease-out;
+    border-color: #ffffff;
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
 }
 
-@keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
+@keyframes pulse-outline {
+    0% {
+        border-color: #ffffff;
+        box-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+    }
+    100% {
+        border-color: #30363d;
+        box-shadow: none;
+    }
 }
 
 .map-container {
