@@ -6,6 +6,7 @@ let isRefreshing = false;
 let markerData = []; // Store company data for search
 let activeMarker = null; // Track the currently active (clicked) marker
 let searchResults = []; // Store search result marker indices
+let companiesOnMap = []; // Store companies with valid coordinates
 
 async function initMap() {
     try {
@@ -51,8 +52,8 @@ async function initMap() {
         addCompanyMarkers();
         console.log('✅ Markers added');
         
-        // Update company count
-        updateCompanyCount(companiesData.length);
+        // Update company count with companies that have coordinates
+        updateCompanyCount(companiesOnMap.length);
         
         // CRITICAL FIX: Safe click binding. Listens to map canvas clicks to deselect active items
         map.on('click', function() {
@@ -82,6 +83,7 @@ function clearMap() {
     });
     markers = [];
     markerData = [];
+    companiesOnMap = [];
     activeMarker = null;
     console.log('✅ Markers cleared');
 }
@@ -94,6 +96,12 @@ function addCompanyMarkers() {
 
     companiesData.forEach((company, index) => {
         try {
+            // Check if company has valid coordinates
+            if (!company.latitude || !company.longitude) {
+                console.warn(`⚠️ Skipping ${company.name} - missing coordinates`);
+                return;
+            }
+
             // Render logo as an image if a valid URL exists
             let logoHTML = '';
             if (isImageUrl(company.logo)) {
@@ -177,6 +185,7 @@ function addCompanyMarkers() {
 
             markers.push(marker);
             markerData.push(company);
+            companiesOnMap.push(company);
         } catch (error) {
             console.error(`Error adding marker for ${company.name}:`, error);
         }
@@ -261,7 +270,7 @@ function searchCompanies(query) {
     if (!query) {
         console.log('🔍 Search cleared');
         searchResults = [];
-        updateCompanyCount(companiesData.length);
+        updateCompanyCount(companiesOnMap.length);
         return;
     }
 
@@ -331,7 +340,7 @@ async function refreshData() {
 
         // Reassemble canvas marker element stack references
         addCompanyMarkers();
-        updateCompanyCount(companiesData.length);
+        updateCompanyCount(companiesOnMap.length);
 
         console.log('✅ Refresh completed successfully');
         refreshBtn.textContent = 'Refresh';
