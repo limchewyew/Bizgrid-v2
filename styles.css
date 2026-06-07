@@ -50,12 +50,15 @@ header {
     align-items: center;
 }
 
-/* Company Count Display - Aligned with Search Bar Style */
-.company-count-display {
+/* Company Count Box - Framed like Button */
+.company-count-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     background: #161b22;
     color: #c9d1d9;
     border: 1px solid #30363d;
-    padding: 6px 12px;
+    padding: 6px 14px;
     border-radius: 6px;
     font-size: 13px;
     font-weight: 500;
@@ -64,10 +67,21 @@ header {
     white-space: nowrap;
 }
 
-.company-count-display:hover {
+.company-count-box:hover {
     background: #21262d;
     border-color: #8b949e;
     color: #f0f6fc;
+}
+
+.count-label {
+    color: #8b949e;
+}
+
+.count-value {
+    color: #f0f6fc;
+    font-weight: 600;
+    min-width: 25px;
+    text-align: center;
 }
 
 /* Modern Input Box Styling */
@@ -324,7 +338,7 @@ header {
         width: 180px;
     }
 
-    .company-count-display {
+    .company-count-box {
         display: none;
     }
 }
