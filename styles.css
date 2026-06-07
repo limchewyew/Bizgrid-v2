@@ -50,6 +50,30 @@ header {
     align-items: center;
 }
 
+/* Company Count Display */
+.company-count-display {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    font-size: 13px;
+}
+
+.count-label {
+    color: #8b949e;
+    font-weight: 500;
+}
+
+.count-value {
+    color: #58a6ff;
+    font-weight: 600;
+    min-width: 30px;
+    text-align: center;
+}
+
 /* Modern Input Box Styling */
 .search-input {
     background: #161b22;
@@ -302,5 +326,9 @@ header {
 
     .search-input {
         width: 180px;
+    }
+
+    .company-count-display {
+        display: none;
     }
 }
