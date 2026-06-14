@@ -298,7 +298,7 @@ function searchCompanies(query) {
     if (searchResults.length === 1) {
         const markerIndex = searchResults[0];
         const marker = markers[markerIndex];
-        map.setView(marker.getLatLng(), 8);
+        map.setView(marker.getLatLng(), 30);
     } else if (searchResults.length > 1) {
         const group = new L.featureGroup(searchResults.map(i => markers[i]));
         map.fitBounds(group.getBounds(), { padding: [50, 50] });
