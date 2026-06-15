@@ -31,9 +31,9 @@ async function initMap() {
         console.log('✅ Map created');
 
         // Add tile layer
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors',
-            maxZoom: 19,
+        L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png', {
+            attribution: '© Stadia Maps, © OpenStreetMap contributors',
+            maxZoom: 20,
             minZoom: 2
         }).addTo(map);
         console.log('✅ Tiles loaded');
