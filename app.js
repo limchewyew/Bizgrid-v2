@@ -212,10 +212,21 @@ function createTooltipContent(company) {
     const websiteLink = websiteUrl !== '#' ? 
         `<a href="${websiteUrl}" target="_blank">Visit Website →</a>` : '';
 
+    // Build logo HTML for tooltip header
+    let logoHTML = '';
+    if (isImageUrl(company.logo)) {
+        logoHTML = `<img src="${company.logo}" alt="${company.name} logo" class="tooltip-logo">`;
+    }
+
     return `
         <div class="company-tooltip">
-            <div class="tooltip-company-name">${company.name}</div>
-            <div class="tooltip-location">📍 ${company.city || company.country}</div>
+            <div class="tooltip-header">
+                ${logoHTML}
+                <div class="tooltip-header-content">
+                    <div class="tooltip-company-name">${company.name}</div>
+                    <div class="tooltip-location">📍 ${company.city || company.country}</div>
+                </div>
+            </div>
             
             <div class="tooltip-divider"></div>
             
