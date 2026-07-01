@@ -1,16 +1,621 @@
-/* Sleek Dark Popup Tooltips */
-.company-tooltip {
+@@ -1,428 +1,3 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700&display=swap');
+
+:root {
+    /* Font Families */
+    --font-family-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    --font-family-heading: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    
+    /* Font Sizes */
+    --font-size-xs: 12px;
+    --font-size-sm: 13px;
+    --font-size-base: 14px;
+    --font-size-lg: 15px;
+    --font-size-xl: 16px;
+    --font-size-2xl: 18px;
+    
+    /* Font Weights */
+    --font-weight-regular: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
+    
+    /* Line Heights */
+    --line-height-tight: 1.4;
+    --line-height-normal: 1.5;
+    --line-height-relaxed: 1.6;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-family-primary);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-regular);
+    line-height: var(--line-height-normal);
+    background: #0d1117;
+    height: 100vh;
+    overflow: hidden;
+    color: #c9d1d9;
+}
+
+.container {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: #0d1117;
+}
+
+/* Sleek Minimalist Dark Header */
+header {
+    background: #0d1117;
+    color: #f0f6fc;
+    padding: 14px 24px;
+    border-bottom: 1px solid #30363d;
+    z-index: 100;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.header-left {
+    flex: 1;
+}
+
+.header-left h1 {
+    font-family: var(--font-family-heading);
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-semibold);
+    letter-spacing: -0.2px;
+    text-transform: uppercase;
+    color: #f0f6fc;
+    line-height: var(--line-height-tight);
+}
+
+.header-controls {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+/* Company Count Box - Framed like Button */
+.company-count-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     background: #161b22;
     color: #c9d1d9;
-    border-radius: 8px;
-    padding: 16px;
     border: 1px solid #30363d;
-    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4);
-    max-width: 300px;
-    width: 100%;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-family: var(--font-family-primary);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    cursor: default;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    line-height: var(--line-height-tight);
+}
+
+.company-count-box:hover {
+    background: #21262d;
+    border-color: #8b949e;
+    color: #f0f6fc;
+}
+
+.count-label {
+    color: #8b949e;
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-regular);
+}
+
+.count-value {
+    color: #f0f6fc;
+    font-weight: var(--font-weight-semibold);
+    min-width: 25px;
+    text-align: center;
+}
+
+/* Search Wrapper - Container for search input and dropdown */
+.search-wrapper {
+    position: relative;
+    width: 240px;
+    z-index: 1001;
+}
+
+/* Modern Input Box Styling */
+.search-input {
+    background: #161b22;
+    color: #f0f6fc;
+    padding: 6px 12px;
+    border: 1px solid #30363d;
+    border-radius: 6px;
     font-family: var(--font-family-primary);
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-regular);
+    width: 100%;
+    transition: all 0.2s ease;
+    outline: none;
     line-height: var(--line-height-normal);
-    overflow: visible;
+}
+
+.search-input:focus {
+    border-color: #58a6ff;
+    background: #0d1117;
+    box-shadow: 0 0 0 3px rgba(56, 139, 253, 0.15);
+}
+
+.search-input::placeholder {
+    color: #8b949e;
+    font-size: var(--font-size-sm);
+}
+
+/* Search Dropdown Styling - INCREASED Z-INDEX TO 10000 */
+.search-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-top: none;
+    border-radius: 0 0 6px 6px;
+    max-height: 300px;
+    overflow-y: auto;
+    z-index: 10000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+}
+
+.search-dropdown.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-bottom: 1px solid #21262d;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+    font-family: var(--font-family-primary);
+}
+
+.dropdown-item:hover {
+    background-color: #21262d;
+}
+
+.dropdown-item:last-child {
+    border-bottom: none;
+}
+
+.dropdown-item-logo {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    border-radius: 4px;
+    background: #0d1117;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border: 1px solid #30363d;
+}
+
+.dropdown-item-logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.dropdown-item-logo span {
+    font-size: 16px;
+    color: #58a6ff;
+}
+
+.dropdown-item-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.dropdown-item-name {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: #f0f6fc;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.dropdown-item-location {
+    font-size: var(--font-size-xs);
+    color: #8b949e;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 2px;
+}
+
+.dropdown-empty {
+    padding: 12px;
+    text-align: center;
+    color: #8b949e;
+    font-size: var(--font-size-sm);
+    font-family: var(--font-family-primary);
+}
+
+/* "See more" indicator styling */
+.dropdown-see-more {
+    padding: 8px 12px;
+    text-align: center;
+    color: #8b949e;
+    font-size: var(--font-size-xs);
+    font-family: var(--font-family-primary);
+    background: #0d1117;
+    border-top: 1px solid #21262d;
+    font-style: italic;
+}
+
+/* Professional Outline Button Styling */
+.refresh-btn {
+    background: #161b22;
+    color: #c9d1d9;
+    border: 1px solid #30363d;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-family: var(--font-family-primary);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    line-height: var(--line-height-tight);
+}
+
+.refresh-btn:hover:not(:disabled) {
+    background: #21262d;
+    border-color: #8b949e;
+    color: #f0f6fc;
+}
+
+.refresh-btn:active:not(:disabled) {
+    background: #282e38;
+}
+
+.refresh-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.refresh-btn.loading {
+    animation: pulse-outline 0.3s ease-out;
+    border-color: #ffffff;
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+}
+
+@keyframes pulse-outline {
+    0% {
+        border-color: #ffffff;
+        box-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+    }
+    100% {
+        border-color: #30363d;
+        box-shadow: none;
+    }
+}
+
+.map-container {
+    flex: 1;
+    position: relative;
+    background: #0d1117;
+    height: 100%;
+    min-height: 0;
+    z-index: 1;
+}
+
+.info-panel {
+    background: #0d1117;
+    padding: 10px 24px;
+    border-top: 1px solid #30363d;
+    text-align: center;
+    font-family: var(--font-family-primary);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-regular);
+    color: #8b949e;
+    line-height: var(--line-height-normal);
+}
+
+/* Dark Mode Leaflet Map Overrides */
+.leaflet-container {
+    background: #0d1117 !important;
+}
+
+.leaflet-control-attribution {
+    background-color: rgba(13, 17, 23, 0.8) !important;
+    color: #8b949e !important;
+    font-family: var(--font-family-primary) !important;
+    font-size: var(--font-size-xs) !important;
+}
+
+.leaflet-control-attribution a {
+    color: #58a6ff !important;
+}
+
+/* Professional Corporate Map Bubbles - White with Navy Border */
+.company-bubble, .bubble-bg-1, .bubble-bg-2, .bubble-bg-3, .bubble-bg-4, .bubble-bg-5, .bubble-bg-6, .bubble-bg-7, .bubble-bg-8 {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-family: var(--font-family-primary);
+    font-weight: var(--font-weight-semibold);
+    background: #ffffff !important;
+    color: #1a237e !important;
+    font-size: 11px;
+    line-height: 1;
+    border: 2px solid #1a237e;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.company-bubble img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.company-bubble:hover {
+    transform: translateY(-2px) scale(1.1);
+    border-color: #58a6ff;
+    color: #58a6ff !important;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
+}
+
+.company-bubble.highlighted {
+    border-color: #f78166;
+    background: #fffefb !important;
+    box-shadow: 0 0 12px rgba(247, 129, 102, 0.4);
+}
+
+/* Tooltip Header with Logo - Fixed Layout */
+.tooltip-header {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 0 0 12px 0;
+    border-bottom: 1px solid #30363d;
+    margin: 0 0 12px 0;
+    width: 100%;
+    overflow: hidden;
+}
+
+.tooltip-logo {
+    width: 56px;
+    height: 56px;
+    min-width: 56px;
+    min-height: 56px;
+    border-radius: 8px;
+    object-fit: cover;
+    flex-shrink: 0;
+    background: #0d1117;
+    border: 1px solid #30363d;
+}
+
+.tooltip-header-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    min-width: 0;
+    overflow: hidden;
+}
+
+/* Sleek Dark Popup Tooltips */
+.company-tooltip {
+    background: #161b22;
+@@ -437,191 +12,5 @@ header {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-regular);
+    line-height: var(--line-height-normal);
+    overflow: hidden;
+}
+
+.tooltip-company-name {
+    font-family: var(--font-family-heading);
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-lg);
+    color: #f0f6fc;
+    margin-bottom: 4px;
+    line-height: var(--line-height-tight);
+    word-break: break-word;
+    overflow-wrap: break-word;
+}
+
+.tooltip-location {
+    color: #8b949e;
+    font-family: var(--font-family-primary);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-regular);
+    margin-bottom: 0;
+    line-height: var(--line-height-normal);
+    word-break: break-word;
+    overflow-wrap: break-word;
+}
+
+.tooltip-divider {
+    height: 1px;
+    background: #30363d;
+    margin: 12px 0;
+}
+
+.tooltip-row {
+    display: flex;
+    justify-content: space-between;
+    margin: 6px 0;
+    color: #8b949e;
+    font-family: var(--font-family-primary);
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-normal);
+    gap: 12px;
+}
+
+.tooltip-label {
+    font-weight: var(--font-weight-regular);
+    color: #8b949e;
+    flex-shrink: 0;
+}
+
+.tooltip-value {
+    color: #c9d1d9;
+    font-weight: var(--font-weight-medium);
+    text-align: right;
+    flex-shrink: 0;
+}
+
+.tooltip-description {
+    color: #8b949e;
+    margin: 12px 0;
+    font-family: var(--font-family-primary);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-regular);
+    line-height: var(--line-height-relaxed);
+    word-break: break-word;
+    overflow-wrap: break-word;
+}
+
+.tooltip-website {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid #30363d;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.tooltip-website a {
+    display: inline-block;
+    background: #21262d;
+    color: #c9d1d9;
+    border: 1px solid #30363d;
+    padding: 5px 10px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-family: var(--font-family-primary);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-medium);
+    transition: all 0.2s ease;
+    cursor: pointer;
+    line-height: var(--line-height-tight);
+    white-space: nowrap;
+    flex: 1;
+    min-width: 100px;
+    text-align: center;
+}
+
+.tooltip-website a:hover {
+    background: #30363d;
+    border-color: #8b949e;
+    color: #f0f6fc;
+}
+
+/* Leaflet Layout Overrides for Dark Theme Integration */
+.leaflet-popup-content-wrapper {
+    background: #161b22 !important;
+    border: 1px solid #30363d;
+    padding: 0 !important;
+    border-radius: 8px;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4);
+}
+
+.leaflet-popup-content {
+    margin: 0 !important;
+    max-width: 100%;
+    overflow: visible !important;
+}
+
+.leaflet-popup-tip {
+    background: #161b22 !important;
+    border-left: 1px solid #30363d;
+    border-bottom: 1px solid #30363d;
+}
+
+.leaflet-popup {
+    margin-bottom: 20px;
+}
+
+/* Responsive Structural Refinements */
+@media (max-width: 768px) {
+    header {
+        padding: 12px 16px;
+    }
+
+    .header-left h1 {
+        font-size: var(--font-size-lg);
+    }
+
+    .search-wrapper {
+        width: 180px;
+    }
+
+    .search-input {
+        width: 100%;
+    }
+
+    .company-count-box {
+        display: none;
+    }
+
+    .tooltip-header {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .tooltip-logo {
+        width: 48px;
+        height: 48px;
+        min-width: 48px;
+        min-height: 48px;
+    }
+
+    .company-tooltip {
+        max-width: 280px;
+    }
+
+    .tooltip-website {
+        flex-direction: column;
+    }
+
+    .tooltip-website a {
+        width: 100%;
+        min-width: auto;
+    }
+
+    .dropdown-item {
+        padding: 8px 10px;
+    }
+
+    .dropdown-item-logo {
+        width: 28px;
+        height: 28px;
+        min-width: 28px;
+    }
+
+    .search-dropdown {
+        max-height: 250px;
+    }
 }
