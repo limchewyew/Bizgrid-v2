@@ -222,6 +222,33 @@ header {
     box-shadow: 0 0 12px rgba(247, 129, 102, 0.4);
 }
 
+/* Tooltip Header with Logo */
+.tooltip-header {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 0 0 12px 0;
+    border-bottom: 1px solid #30363d;
+    margin: 0 0 12px 0;
+}
+
+.tooltip-logo {
+    width: 56px;
+    height: 56px;
+    border-radius: 8px;
+    object-fit: cover;
+    flex-shrink: 0;
+    background: #0d1117;
+    border: 1px solid #30363d;
+}
+
+.tooltip-header-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
 /* Sleek Dark Popup Tooltips */
 .company-tooltip {
     background: #161b22;
@@ -245,7 +272,7 @@ header {
 .tooltip-location {
     color: #8b949e;
     font-size: 12px;
-    margin-bottom: 12px;
+    margin-bottom: 0;
 }
 
 .tooltip-divider {
@@ -340,5 +367,16 @@ header {
 
     .company-count-box {
         display: none;
+    }
+
+    .tooltip-header {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .tooltip-logo {
+        width: 48px;
+        height: 48px;
     }
 }
