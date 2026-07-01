@@ -272,7 +272,7 @@ header {
     box-shadow: 0 0 12px rgba(247, 129, 102, 0.4);
 }
 
-/* Tooltip Header with Logo */
+/* Tooltip Header with Logo - Fixed Layout */
 .tooltip-header {
     display: flex;
     gap: 12px;
@@ -280,11 +280,15 @@ header {
     padding: 0 0 12px 0;
     border-bottom: 1px solid #30363d;
     margin: 0 0 12px 0;
+    width: 100%;
+    overflow: hidden;
 }
 
 .tooltip-logo {
     width: 56px;
     height: 56px;
+    min-width: 56px;
+    min-height: 56px;
     border-radius: 8px;
     object-fit: cover;
     flex-shrink: 0;
@@ -297,6 +301,8 @@ header {
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
+    min-width: 0;
+    overflow: hidden;
 }
 
 /* Sleek Dark Popup Tooltips */
@@ -307,11 +313,13 @@ header {
     padding: 16px;
     border: 1px solid #30363d;
     box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4);
-    max-width: 280px;
+    max-width: 300px;
+    width: 100%;
     font-family: var(--font-family-primary);
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-regular);
     line-height: var(--line-height-normal);
+    overflow: hidden;
 }
 
 .tooltip-company-name {
@@ -321,6 +329,8 @@ header {
     color: #f0f6fc;
     margin-bottom: 4px;
     line-height: var(--line-height-tight);
+    word-break: break-word;
+    overflow-wrap: break-word;
 }
 
 .tooltip-location {
@@ -330,6 +340,8 @@ header {
     font-weight: var(--font-weight-regular);
     margin-bottom: 0;
     line-height: var(--line-height-normal);
+    word-break: break-word;
+    overflow-wrap: break-word;
 }
 
 .tooltip-divider {
@@ -346,16 +358,20 @@ header {
     font-family: var(--font-family-primary);
     font-size: var(--font-size-sm);
     line-height: var(--line-height-normal);
+    gap: 12px;
 }
 
 .tooltip-label {
     font-weight: var(--font-weight-regular);
     color: #8b949e;
+    flex-shrink: 0;
 }
 
 .tooltip-value {
     color: #c9d1d9;
     font-weight: var(--font-weight-medium);
+    text-align: right;
+    flex-shrink: 0;
 }
 
 .tooltip-description {
@@ -365,6 +381,8 @@ header {
     font-size: var(--font-size-xs);
     font-weight: var(--font-weight-regular);
     line-height: var(--line-height-relaxed);
+    word-break: break-word;
+    overflow-wrap: break-word;
 }
 
 .tooltip-website {
@@ -373,6 +391,7 @@ header {
     border-top: 1px solid #30363d;
     display: flex;
     gap: 8px;
+    flex-wrap: wrap;
 }
 
 .tooltip-website a {
@@ -389,6 +408,10 @@ header {
     transition: all 0.2s ease;
     cursor: pointer;
     line-height: var(--line-height-tight);
+    white-space: nowrap;
+    flex: 1;
+    min-width: 100px;
+    text-align: center;
 }
 
 .tooltip-website a:hover {
@@ -403,16 +426,23 @@ header {
     border: 1px solid #30363d;
     padding: 0 !important;
     border-radius: 8px;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4);
 }
 
 .leaflet-popup-content {
     margin: 0 !important;
+    max-width: 100%;
+    overflow: visible !important;
 }
 
 .leaflet-popup-tip {
     background: #161b22 !important;
     border-left: 1px solid #30363d;
     border-bottom: 1px solid #30363d;
+}
+
+.leaflet-popup {
+    margin-bottom: 20px;
 }
 
 /* Responsive Structural Refinements */
@@ -442,5 +472,20 @@ header {
     .tooltip-logo {
         width: 48px;
         height: 48px;
+        min-width: 48px;
+        min-height: 48px;
+    }
+
+    .company-tooltip {
+        max-width: 280px;
+    }
+
+    .tooltip-website {
+        flex-direction: column;
+    }
+
+    .tooltip-website a {
+        width: 100%;
+        min-width: auto;
     }
 }
