@@ -65,6 +65,7 @@ async function initMap() {
                 }
                 activeMarker = null;
             }
+            closeSearchDropdown();
         });
         
     } catch (error) {
@@ -266,11 +267,53 @@ function updateCompanyCount(count) {
     }
 }
 
-// Global text queries search mapping matching functionality
-function searchCompanies(query) {
+// Close search dropdown
+function closeSearchDropdown() {
+    const dropdown = document.getElementById('searchDropdown');
+    if (dropdown) {
+        dropdown.classList.remove('visible');
+        dropdown.innerHTML = '';
+    }
+}
+
+// Navigate to company from dropdown selection
+function goToCompany(index) {
+    const marker = markers[index];
+    if (marker) {
+        // Close any previously active marker
+        if (activeMarker && activeMarker !== marker) {
+            activeMarker.closePopup();
+            const oldBubble = activeMarker._icon?.querySelector('.company-bubble');
+            if (oldBubble) {
+                oldBubble.classList.remove('highlighted');
+            }
+        }
+
+        // Navigate to the company marker
+        map.setView(marker.getLatLng(), 12);
+        marker.openPopup();
+        activeMarker = marker;
+
+        // Highlight the bubble
+        const bubble = marker._icon?.querySelector('.company-bubble');
+        if (bubble) {
+            bubble.classList.add('highlighted');
+        }
+
+        // Close dropdown and clear search input
+        closeSearchDropdown();
+        document.getElementById('searchInput').value = '';
+        
+        console.log(`✅ Navigated to: ${marker.companyData.name}`);
+    }
+}
+
+// Search with dropdown functionality
+function searchCompaniesWithDropdown(query) {
+    const dropdown = document.getElementById('searchDropdown');
     query = query.toLowerCase().trim();
     
-    // Clear out previous query match highlight elements
+    // Clear previous highlights
     markers.forEach(marker => {
         const bubble = marker._icon?.querySelector('.company-bubble');
         if (bubble) {
@@ -279,41 +322,45 @@ function searchCompanies(query) {
     });
     
     if (!query) {
+        closeSearchDropdown();
         console.log('🔍 Search cleared');
-        searchResults = [];
         updateCompanyCount(companiesOnMap.length);
         return;
     }
 
-    // Loop parameters searching structural metadata strings
-    searchResults = [];
+    // Find matching companies
+    const matches = [];
     markerData.forEach((company, index) => {
         const nameMatch = company.name.toLowerCase().includes(query);
         const cityMatch = company.city ? company.city.toLowerCase().includes(query) : false;
         const countryMatch = company.country.toLowerCase().includes(query);
         
         if (nameMatch || cityMatch || countryMatch) {
-            searchResults.push(index);
-            // Highlight matching bubble node properties
-            const bubble = markers[index]._icon?.querySelector('.company-bubble');
-            if (bubble) {
-                bubble.classList.add('highlighted');
-            }
+            matches.push({ index, company });
         }
     });
 
-    console.log(`🔍 Found ${searchResults.length} matching companies`);
-    updateCompanyCount(searchResults.length);
-    
-    // Auto bounding pan zoom adjustment views depending on the volume of match instances
-    if (searchResults.length === 1) {
-        const markerIndex = searchResults[0];
-        const marker = markers[markerIndex];
-        map.setView(marker.getLatLng(), 25);
-    } else if (searchResults.length > 1) {
-        const group = new L.featureGroup(searchResults.map(i => markers[i]));
-        map.fitBounds(group.getBounds(), { padding: [50, 50] });
+    // Show dropdown with matches
+    if (matches.length > 0) {
+        dropdown.innerHTML = matches.map((match, pos) => `
+            <div class="dropdown-item" onclick="goToCompany(${match.index})" data-index="${match.index}">
+                <div class="dropdown-item-logo">
+                    ${isImageUrl(match.company.logo) ? `<img src="${match.company.logo}" alt="logo">` : '<span>📌</span>'}
+                </div>
+                <div class="dropdown-item-content">
+                    <div class="dropdown-item-name">${match.company.name}</div>
+                    <div class="dropdown-item-location">📍 ${match.company.city || match.company.country}</div>
+                </div>
+            </div>
+        `).join('');
+        dropdown.classList.add('visible');
+    } else {
+        dropdown.innerHTML = '<div class="dropdown-empty">No companies found</div>';
+        dropdown.classList.add('visible');
     }
+
+    console.log(`🔍 Found ${matches.length} matching companies`);
+    updateCompanyCount(matches.length);
 }
 
 // Refresh data action command execution context properties
@@ -335,6 +382,7 @@ async function refreshData() {
         // Wipe visual markers layer stack array references prior to fetching
         clearMap();
         document.getElementById('searchInput').value = '';
+        closeSearchDropdown();
 
         // Trigger dynamic spreadsheet content reloading endpoint reference
         await loadCompaniesFromGoogleSheets();
@@ -389,10 +437,27 @@ document.addEventListener('DOMContentLoaded', function() {
     const searchInput = document.getElementById('searchInput');
     if (searchInput) {
         searchInput.addEventListener('input', (e) => {
-            searchCompanies(e.target.value);
+            searchCompaniesWithDropdown(e.target.value);
+        });
+        searchInput.addEventListener('blur', () => {
+            // Close dropdown after a short delay to allow clicks to register
+            setTimeout(closeSearchDropdown, 200);
+        });
+        searchInput.addEventListener('focus', (e) => {
+            if (e.target.value.trim()) {
+                searchCompaniesWithDropdown(e.target.value);
+            }
         });
         console.log('✅ Search input listener attached');
     }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+        const searchWrapper = document.querySelector('.search-wrapper');
+        if (searchWrapper && !searchWrapper.contains(e.target)) {
+            closeSearchDropdown();
+        }
+    });
 });
 
 // Structural browser element resizing display update recalculations handlers

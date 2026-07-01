@@ -121,6 +121,12 @@ header {
     text-align: center;
 }
 
+/* Search Wrapper - Container for search input and dropdown */
+.search-wrapper {
+    position: relative;
+    width: 240px;
+}
+
 /* Modern Input Box Styling */
 .search-input {
     background: #161b22;
@@ -131,7 +137,7 @@ header {
     font-family: var(--font-family-primary);
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-regular);
-    width: 240px;
+    width: 100%;
     transition: all 0.2s ease;
     outline: none;
     line-height: var(--line-height-normal);
@@ -146,6 +152,104 @@ header {
 .search-input::placeholder {
     color: #8b949e;
     font-size: var(--font-size-sm);
+}
+
+/* Search Dropdown Styling */
+.search-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-top: none;
+    border-radius: 0 0 6px 6px;
+    max-height: 300px;
+    overflow-y: auto;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+}
+
+.search-dropdown.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-bottom: 1px solid #21262d;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+    font-family: var(--font-family-primary);
+}
+
+.dropdown-item:hover {
+    background-color: #21262d;
+}
+
+.dropdown-item:last-child {
+    border-bottom: none;
+}
+
+.dropdown-item-logo {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    border-radius: 4px;
+    background: #0d1117;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border: 1px solid #30363d;
+}
+
+.dropdown-item-logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.dropdown-item-logo span {
+    font-size: 16px;
+    color: #58a6ff;
+}
+
+.dropdown-item-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.dropdown-item-name {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: #f0f6fc;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.dropdown-item-location {
+    font-size: var(--font-size-xs);
+    color: #8b949e;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 2px;
+}
+
+.dropdown-empty {
+    padding: 12px;
+    text-align: center;
+    color: #8b949e;
+    font-size: var(--font-size-sm);
+    font-family: var(--font-family-primary);
 }
 
 /* Professional Outline Button Styling */
@@ -455,8 +559,12 @@ header {
         font-size: var(--font-size-lg);
     }
 
-    .search-input {
+    .search-wrapper {
         width: 180px;
+    }
+
+    .search-input {
+        width: 100%;
     }
 
     .company-count-box {
@@ -487,5 +595,19 @@ header {
     .tooltip-website a {
         width: 100%;
         min-width: auto;
+    }
+
+    .dropdown-item {
+        padding: 8px 10px;
+    }
+
+    .dropdown-item-logo {
+        width: 28px;
+        height: 28px;
+        min-width: 28px;
+    }
+
+    .search-dropdown {
+        max-height: 250px;
     }
 }
