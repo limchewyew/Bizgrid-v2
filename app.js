@@ -308,7 +308,7 @@ function goToCompany(index) {
     }
 }
 
-// Search with dropdown functionality
+// Search with dropdown functionality - LIMITED TO 5 RESULTS
 function searchCompaniesWithDropdown(query) {
     const dropdown = document.getElementById('searchDropdown');
     query = query.toLowerCase().trim();
@@ -340,9 +340,10 @@ function searchCompaniesWithDropdown(query) {
         }
     });
 
-    // Show dropdown with matches
+    // Show dropdown with matches - LIMIT TO 5 VISIBLE ITEMS
     if (matches.length > 0) {
-        dropdown.innerHTML = matches.map((match, pos) => `
+        const displayMatches = matches.slice(0, 5);
+        dropdown.innerHTML = displayMatches.map((match, pos) => `
             <div class="dropdown-item" onclick="goToCompany(${match.index})" data-index="${match.index}">
                 <div class="dropdown-item-logo">
                     ${isImageUrl(match.company.logo) ? `<img src="${match.company.logo}" alt="logo">` : '<span>📌</span>'}
@@ -353,13 +354,19 @@ function searchCompaniesWithDropdown(query) {
                 </div>
             </div>
         `).join('');
+        
+        // Add "See more" indicator if there are more results
+        if (matches.length > 5) {
+            dropdown.innerHTML += `<div class="dropdown-see-more">... and ${matches.length - 5} more results. Keep typing to filter.</div>`;
+        }
+        
         dropdown.classList.add('visible');
     } else {
         dropdown.innerHTML = '<div class="dropdown-empty">No companies found</div>';
         dropdown.classList.add('visible');
     }
 
-    console.log(`🔍 Found ${matches.length} matching companies`);
+    console.log(`🔍 Found ${matches.length} matching companies (showing 5)`);
     updateCompanyCount(matches.length);
 }
 
