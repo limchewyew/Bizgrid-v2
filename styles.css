@@ -427,6 +427,8 @@ header {
 /* Sleek Dark Popup Tooltips */
 .company-tooltip {
     background: #161b22;
+    padding: 16px;
+    width: 280px;
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-regular);
     line-height: var(--line-height-normal);
