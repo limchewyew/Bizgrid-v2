@@ -1,4 +1,4 @@
-@@ -1,428 +1,3 @@
+```css
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700&display=swap');
 
 :root {
@@ -427,7 +427,6 @@ header {
 /* Sleek Dark Popup Tooltips */
 .company-tooltip {
     background: #161b22;
-@@ -437,191 +12,5 @@ header {
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-regular);
     line-height: var(--line-height-normal);
@@ -533,12 +532,17 @@ header {
 }
 
 /* Leaflet Layout Overrides for Dark Theme Integration */
-.leaflet-popup-content-wrapper {
+.leaflet-popup-content-wrapper, .leaflet-popup-tip {
     background: #161b22 !important;
-    border: 1px solid #30363d;
+    color: #c9d1d9 !important;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.5) !important;
+}
+
+.leaflet-popup-content-wrapper {
     padding: 0 !important;
-    border-radius: 8px;
-    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4);
+    border-radius: 8px !important;
+    border: 1px solid #30363d !important;
+    overflow: hidden !important;
 }
 
 .leaflet-popup-content {
@@ -548,9 +552,8 @@ header {
 }
 
 .leaflet-popup-tip {
-    background: #161b22 !important;
-    border-left: 1px solid #30363d;
-    border-bottom: 1px solid #30363d;
+    border: 1px solid #30363d !important;
+    box-shadow: none !important;
 }
 
 .leaflet-popup {
@@ -619,3 +622,5 @@ header {
         max-height: 250px;
     }
 }
+
+```
