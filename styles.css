@@ -1,4 +1,3 @@
-```css
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700&display=swap');
 
 :root {
@@ -212,10 +211,14 @@ header {
     border: 1px solid #30363d;
 }
 
+/* Ensure images inside the dropdown avatar always fit the 32x32 box */
 .dropdown-item-logo img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: cover;    /* fills the box and crops if needed for uniform look */
+    object-position: center;
+    display: block;       /* remove inline whitespace issues */
+    max-width: none;
 }
 
 .dropdown-item-logo span {
@@ -624,5 +627,3 @@ header {
         max-height: 250px;
     }
 }
-
-```
