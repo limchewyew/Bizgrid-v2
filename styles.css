@@ -1,25 +1,18 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700&display=swap');
 
 :root {
-    /* Font Families */
     --font-family-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
     --font-family-heading: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
-    
-    /* Font Sizes */
     --font-size-xs: 12px;
     --font-size-sm: 13px;
     --font-size-base: 14px;
     --font-size-lg: 15px;
     --font-size-xl: 16px;
     --font-size-2xl: 18px;
-    
-    /* Font Weights */
     --font-weight-regular: 400;
     --font-weight-medium: 500;
     --font-weight-semibold: 600;
     --font-weight-bold: 700;
-    
-    /* Line Heights */
     --line-height-tight: 1.4;
     --line-height-normal: 1.5;
     --line-height-relaxed: 1.6;
@@ -50,7 +43,6 @@ body {
     background: #0d1117;
 }
 
-/* Sleek Minimalist Dark Header */
 header {
     background: #0d1117;
     color: #f0f6fc;
@@ -83,7 +75,6 @@ header {
     align-items: center;
 }
 
-/* Company Count Box - Framed like Button */
 .company-count-box {
     display: flex;
     align-items: center;
@@ -121,14 +112,12 @@ header {
     text-align: center;
 }
 
-/* Search Wrapper - Container for search input and dropdown */
 .search-wrapper {
     position: relative;
     width: 240px;
     z-index: 1001;
 }
 
-/* Modern Input Box Styling */
 .search-input {
     background: #161b22;
     color: #f0f6fc;
@@ -155,7 +144,6 @@ header {
     font-size: var(--font-size-sm);
 }
 
-/* Search Dropdown Styling - INCREASED Z-INDEX TO 10000 */
 .search-dropdown {
     position: absolute;
     top: 100%;
