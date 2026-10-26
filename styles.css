@@ -407,6 +407,23 @@ header {
     color: #58a6ff !important;
 }
 
+.marker-cluster-small,
+.marker-cluster-medium,
+.marker-cluster-large {
+    background-color: rgba(88, 166, 255, 0.22) !important;
+    border: 1px solid rgba(88, 166, 255, 0.45) !important;
+}
+
+.marker-cluster-small div,
+.marker-cluster-medium div,
+.marker-cluster-large div {
+    background-color: rgba(13, 17, 23, 0.9) !important;
+    color: #f0f6fc !important;
+    border: 1px solid rgba(88, 166, 255, 0.7) !important;
+    font-weight: 700;
+    font-size: 12px;
+}
+
 .company-bubble, .bubble-bg-1, .bubble-bg-2, .bubble-bg-3, .bubble-bg-4, .bubble-bg-5, .bubble-bg-6, .bubble-bg-7, .bubble-bg-8 {
     width: 28px;
     height: 28px;

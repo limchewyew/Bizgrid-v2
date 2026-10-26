@@ -7,6 +7,7 @@ let markerData = [];
 let activeMarker = null;
 let searchResults = [];
 let companiesOnMap = [];
+let markerClusterGroup = null;
 
 function setLoadingProgress(percent, statusText = '') {
     const bar = document.getElementById('loadingProgressBar');
@@ -32,6 +33,23 @@ function hideLoadingOverlay() {
     if (overlay) {
         overlay.classList.add('hidden');
     }
+}
+
+function createMarkerClusterIcon(cluster) {
+    const count = cluster.getChildCount();
+    let className = 'marker-cluster-small';
+
+    if (count >= 20) {
+        className = 'marker-cluster-large';
+    } else if (count >= 8) {
+        className = 'marker-cluster-medium';
+    }
+
+    return new L.DivIcon({
+        html: `<div><span>${count}</span></div>`,
+        className: `marker-cluster ${className}`,
+        iconSize: new L.Point(40, 40)
+    });
 }
 
 async function initMap() {
@@ -73,6 +91,18 @@ async function initMap() {
         }).setView([20, 0], 3);
         mapInitialized = true;
         console.log('✅ Map created');
+
+        markerClusterGroup = L.markerClusterGroup({
+            chunkedLoading: true,
+            spiderfyOnMaxZoom: true,
+            showCoverageOnHover: false,
+            disableClusteringAtZoom: 10,
+            maxClusterRadius: 50,
+            iconCreateFunction: createMarkerClusterIcon,
+            removeOutsideVisibleBounds: true,
+            animate: true
+        });
+        map.addLayer(markerClusterGroup);
 
         setLoadingProgress(55, 'Loading map tiles...');
 
@@ -138,6 +168,9 @@ function isImageUrl(url) {
 
 function clearMap() {
     console.log('🧹 Clearing markers...');
+    if (markerClusterGroup) {
+        markerClusterGroup.clearLayers();
+    }
     if (map) {
         markers.forEach(marker => {
             map.removeLayer(marker);
@@ -182,7 +215,7 @@ function addSingleCompanyMarker(company, index) {
             keyboard: false,
             opacity: 1,
             title: company.name
-        }).addTo(map);
+        });
 
         marker.companyIndex = index;
         marker.companyData = company;
@@ -195,7 +228,6 @@ function addSingleCompanyMarker(company, index) {
             closeButton: false
         });
 
-        // Only open popup on click. Hover previews create too much DOM churn during zoom.
         marker.on('click', function(e) {
             L.DomEvent.stopPropagation(e);
 
@@ -217,6 +249,12 @@ function addSingleCompanyMarker(company, index) {
 
             console.log(`✅ Company selected: ${company.name}`);
         });
+
+        if (markerClusterGroup) {
+            markerClusterGroup.addLayer(marker);
+        } else {
+            map.addLayer(marker);
+        }
 
         markers.push(marker);
         markerData.push(company);
