@@ -63,7 +63,13 @@ async function initMap() {
             preferCanvas: true,
             zoomControl: true,
             attributionControl: true,
-            fadeAnimation: true
+            fadeAnimation: true,
+            zoomSnap: 0.5,
+            zoomDelta: 0.5,
+            updateWhenZooming: false,
+            updateWhenIdle: true,
+            worldCopyJump: true,
+            renderer: L.canvas({ padding: 0.1 })
         }).setView([20, 0], 3);
         mapInitialized = true;
         console.log('✅ Map created');
@@ -73,7 +79,8 @@ async function initMap() {
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors',
             maxZoom: 19,
-            minZoom: 2
+            minZoom: 2,
+            updateWhenIdle: true
         }).addTo(map);
 
         console.log('✅ Tiles loaded');
@@ -83,6 +90,17 @@ async function initMap() {
             if (popupNode) {
                 L.DomEvent.on(popupNode, 'click', L.DomEvent.stopPropagation);
                 L.DomEvent.on(popupNode, 'mousedown', L.DomEvent.stopPropagation);
+            }
+        });
+
+        map.on('zoomstart', function() {
+            if (activeMarker) {
+                activeMarker.closePopup();
+                const bubble = activeMarker._icon?.querySelector('.company-bubble');
+                if (bubble) {
+                    bubble.classList.remove('highlighted');
+                }
+                activeMarker = null;
             }
         });
 
@@ -159,7 +177,11 @@ function addSingleCompanyMarker(company, index) {
         });
 
         const marker = L.marker([company.latitude, company.longitude], {
-            icon: customIcon
+            icon: customIcon,
+            riseOnHover: true,
+            keyboard: false,
+            opacity: 1,
+            title: company.name
         }).addTo(map);
 
         marker.companyIndex = index;
@@ -173,18 +195,7 @@ function addSingleCompanyMarker(company, index) {
             closeButton: false
         });
 
-        marker.on('mouseover', function() {
-            if (activeMarker !== this) {
-                this.openPopup();
-            }
-        });
-
-        marker.on('mouseout', function() {
-            if (activeMarker !== this) {
-                this.closePopup();
-            }
-        });
-
+        // Only open popup on click. Hover previews create too much DOM churn during zoom.
         marker.on('click', function(e) {
             L.DomEvent.stopPropagation(e);
 
