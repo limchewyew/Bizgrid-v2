@@ -1,101 +1,61 @@
 // Initialize the map globals
 let map;
 let markers = [];
-let markerCluster;
 let mapInitialized = false;
 let isRefreshing = false;
 let markerData = []; // Store company data for search
 let activeMarker = null; // Track the currently active (clicked) marker
+let searchResults = []; // Store search result marker indices
 let companiesOnMap = []; // Store companies with valid coordinates
-
-function setLoadingState(statusText, percent) {
-    const overlay = document.getElementById('loadingOverlay');
-    const progressBar = document.getElementById('loadingProgressBar');
-    const status = document.getElementById('loadingStatus');
-
-    if (status) {
-        status.textContent = statusText;
-    }
-
-    if (progressBar) {
-        const safePercent = Math.max(0, Math.min(100, percent));
-        progressBar.style.width = `${safePercent}%`;
-    }
-
-    if (overlay && percent >= 100) {
-        overlay.classList.add('hidden');
-    }
-}
 
 async function initMap() {
     try {
         console.log('🗺️ Starting map initialization...');
-        setLoadingState('Preparing map...', 10);
-
-        if (!window.L) {
-            throw new Error('Leaflet failed to load.');
-        }
-
+        
+        // Load data from Google Sheets natively via data.js
         console.log('⏳ Waiting for data to load...');
         await loadCompaniesFromGoogleSheets();
-
+        
         console.log(`📍 Companies loaded: ${companiesData.length}`);
-
+        
+        // Only initialize map if we have data
         if (companiesData.length === 0) {
             console.error('❌ No data available to display');
             document.getElementById('map').innerHTML = '<p style="padding: 20px; color: red;">⚠️ Error: No companies data loaded. Check console for details.</p>';
-            setLoadingState('No company data available.', 100);
             return;
         }
 
-        setLoadingState('Building map...', 45);
-
-        // Explicit map options prevent Leaflet runtime errors and improves interaction smoothness.
-        map = L.map('map', {
-            zoomSnap: 0.5,
-            preferCanvas: true,
-            minZoom: 2,
-            maxZoom: 19,
-            worldCopyJump: true
-        }).setView([20, 0], 2);
-
+        // Create map centered on world
+        map = L.map('map').setView([20, 0], 3);
         mapInitialized = true;
         console.log('✅ Map created');
 
-        const tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        // Add tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors',
             maxZoom: 19,
-            minZoom: 2,
-            updateWhenIdle: true,
-            keepBuffer: 2
-        });
-        tileLayer.addTo(map);
+            minZoom: 2
+        }).addTo(map);
         console.log('✅ Tiles loaded');
 
-        if (window.L.markerClusterGroup) {
-            markerCluster = L.markerClusterGroup({
-                chunkedLoading: true,
-                maxClusterRadius: 45,
-                showCoverageOnHover: false,
-                spiderfyOnMaxZoom: true,
-                zoomToBoundsOnClick: true,
-                disableClusteringAtZoom: 6,
-                animate: true,
-                removeOutsideVisibleBounds: true
-            });
-            map.addLayer(markerCluster);
-            console.log('✅ Marker clustering enabled');
-        } else {
-            console.warn('⚠️ MarkerCluster plugin unavailable; using plain markers.');
-            markerCluster = null;
-        }
+        // CRITICAL FIX: Safe click context capture inside Leaflet Tooltip elements.
+        // Prevents Leaflet map handlers from capturing pointer clicks on hyperlinks inside popups.
+        map.on('popupopen', function(e) {
+            const popupNode = e.popup._container;
+            if (popupNode) {
+                L.DomEvent.on(popupNode, 'click', L.DomEvent.stopPropagation);
+                L.DomEvent.on(popupNode, 'mousedown', L.DomEvent.stopPropagation);
+            }
+        });
 
+        // Add company markers to the map layer
         addCompanyMarkers();
-        setLoadingState('Adding markers...', 80);
         console.log('✅ Markers added');
-
+        
+        // Update company count with companies that have coordinates
         updateCompanyCount(companiesOnMap.length);
-
+        
+        // CRITICAL FIX: Safe click binding. Listens to map canvas clicks to deselect active items
         map.on('click', function() {
             if (activeMarker) {
                 activeMarker.closePopup();
@@ -107,30 +67,9 @@ async function initMap() {
             }
             closeSearchDropdown();
         });
-
-        map.on('popupopen', function(e) {
-            const popupNode = e.popup._container;
-            if (popupNode) {
-                L.DomEvent.on(popupNode, 'click', L.DomEvent.stopPropagation);
-                L.DomEvent.on(popupNode, 'mousedown', L.DomEvent.stopPropagation);
-            }
-        });
-
-        setLoadingState('Map ready', 100);
-        setTimeout(() => {
-            const overlay = document.getElementById('loadingOverlay');
-            if (overlay) {
-                overlay.classList.add('hidden');
-            }
-        }, 400);
-
+        
     } catch (error) {
         console.error('❌ Error initializing map:', error);
-        setLoadingState('Map failed to load', 100);
-        const mapContainer = document.getElementById('map');
-        if (mapContainer) {
-            mapContainer.innerHTML = '<p style="padding: 20px; color: #f87171;">⚠️ Map failed to load. Please refresh the page.</p>';
-        }
     }
 }
 
@@ -140,13 +79,9 @@ function isImageUrl(url) {
 
 function clearMap() {
     console.log('🧹 Clearing markers...');
-
-    if (map && markerCluster) {
-        markerCluster.clearLayers();
-    } else if (map) {
-        markers.forEach(marker => map.removeLayer(marker));
-    }
-
+    markers.forEach(marker => {
+        map.removeLayer(marker);
+    });
     markers = [];
     markerData = [];
     companiesOnMap = [];
@@ -162,11 +97,13 @@ function addCompanyMarkers() {
 
     companiesData.forEach((company, index) => {
         try {
+            // Check if company has valid coordinates
             if (!company.latitude || !company.longitude) {
                 console.warn(`⚠️ Skipping ${company.name} - missing coordinates`);
                 return;
             }
 
+            // Render logo as an image if a valid URL exists
             let logoHTML = '';
             if (isImageUrl(company.logo)) {
                 logoHTML = `<img src="${company.logo}" alt="logo" style="width:70%;height:70%;object-fit:contain;border-radius:50%;">`;
@@ -174,38 +111,58 @@ function addCompanyMarkers() {
                 logoHTML = `<span>${company.logo}</span>`;
             }
 
+            // Create custom HTML for the bubble
             const bubbleHTML = `
                 <div class="company-bubble ${company.bubbleColor}">
                     ${logoHTML}
                 </div>
             `;
 
+            // Create custom Leaflet DivIcon
             const customIcon = L.divIcon({
                 html: bubbleHTML,
                 iconSize: [32, 32],
                 className: 'custom-marker'
             });
 
+            // Create marker instance
             const marker = L.marker([company.latitude, company.longitude], {
-                icon: customIcon,
-                riseOnHover: true,
-                keyboard: false
-            });
+                icon: customIcon
+            }).addTo(map);
 
+            // Store marker parameters for search matching
             marker.companyIndex = index;
             marker.companyData = company;
 
+            // Generate popup content structure
             const tooltipContent = createTooltipContent(company);
+
+            // Bind popup UI container to marker
             marker.bindPopup(tooltipContent, {
                 className: 'company-popup',
                 maxWidth: 300,
-                closeButton: false,
-                autoPan: true
+                closeButton: false
             });
 
-            marker.on('click', function(e) {
-                L.DomEvent.stopPropagation(e);
+            // Show preview content card on hover
+            marker.on('mouseover', function() {
+                if (activeMarker !== this) {
+                    this.openPopup();
+                }
+            });
 
+            marker.on('mouseout', function() {
+                if (activeMarker !== this) {
+                    this.closePopup();
+                }
+            });
+
+            // Handle pinning selection on click
+            marker.on('click', function(e) {
+                // CRITICAL FIX: Stops the click event from bubbling up to the map canvas layer
+                L.DomEvent.stopPropagation(e);
+                
+                // Clear state of any previously clicked marker
                 if (activeMarker && activeMarker !== this) {
                     activeMarker.closePopup();
                     const oldBubble = activeMarker._icon?.querySelector('.company-bubble');
@@ -213,21 +170,19 @@ function addCompanyMarkers() {
                         oldBubble.classList.remove('highlighted');
                     }
                 }
-
+                
+                // Pin open new marker popup card
                 this.openPopup();
                 activeMarker = this;
-
+                
+                // Highlight the specific bubble element node
                 const bubble = this._icon?.querySelector('.company-bubble');
                 if (bubble) {
                     bubble.classList.add('highlighted');
                 }
+                
+                console.log(`✅ Company selected: ${company.name}`);
             });
-
-            if (markerCluster) {
-                markerCluster.addLayer(marker);
-            } else {
-                marker.addTo(map);
-            }
 
             markers.push(marker);
             markerData.push(company);
@@ -236,11 +191,12 @@ function addCompanyMarkers() {
             console.error(`Error adding marker for ${company.name}:`, error);
         }
     });
-
+    
     console.log(`✅ Added ${markers.length} markers to map`);
 }
 
 function createTooltipContent(company) {
+    // AUTOMATIC SEARCH GUARD FOR PROTOCOLS (e.g. fixes missing http/https strings from spreadsheet cells)
     let websiteUrl = company.website ? company.website.trim() : '#';
     if (websiteUrl !== '#' && !websiteUrl.startsWith('http://') && !websiteUrl.startsWith('https://')) {
         websiteUrl = 'https://' + websiteUrl;
@@ -251,9 +207,13 @@ function createTooltipContent(company) {
         linkedinUrl = 'https://' + linkedinUrl;
     }
 
-    const linkedinLink = linkedinUrl !== '#' ? `<a href="${linkedinUrl}" target="_blank" rel="noopener noreferrer">LinkedIn</a>` : '';
-    const websiteLink = websiteUrl !== '#' ? `<a href="${websiteUrl}" target="_blank" rel="noopener noreferrer">Visit Website →</a>` : '';
+    const linkedinLink = linkedinUrl !== '#' ? 
+        `<a href="${linkedinUrl}" target="_blank">LinkedIn</a>` : '';
+    
+    const websiteLink = websiteUrl !== '#' ? 
+        `<a href="${websiteUrl}" target="_blank">Visit Website →</a>` : '';
 
+    // Build logo HTML for tooltip header
     let logoHTML = '';
     if (isImageUrl(company.logo)) {
         logoHTML = `<img src="${company.logo}" alt="${company.name} logo" class="tooltip-logo">`;
@@ -268,30 +228,30 @@ function createTooltipContent(company) {
                     <div class="tooltip-location">📍 ${company.city || company.country}</div>
                 </div>
             </div>
-
+            
             <div class="tooltip-divider"></div>
-
+            
             <div class="tooltip-description">
                 "${company.description}"
             </div>
-
+            
             <div class="tooltip-divider"></div>
-
+            
             <div class="tooltip-row">
                 <span class="tooltip-label"> Employees:</span>
                 <span class="tooltip-value">${company.employees || 'N/A'}</span>
             </div>
-
+            
             <div class="tooltip-row">
                 <span class="tooltip-label"> Founded:</span>
                 <span class="tooltip-value">${company.founded || 'N/A'}</span>
             </div>
-
+            
             <div class="tooltip-row">
                 <span class="tooltip-label"> Revenue:</span>
                 <span class="tooltip-value">${company.revenueRange || 'N/A'}</span>
             </div>
-
+            
             <div class="tooltip-website">
                 ${websiteLink}
                 ${linkedinLink ? ' | ' + linkedinLink : ''}
@@ -307,6 +267,7 @@ function updateCompanyCount(count) {
     }
 }
 
+// Close search dropdown
 function closeSearchDropdown() {
     const dropdown = document.getElementById('searchDropdown');
     if (dropdown) {
@@ -315,9 +276,11 @@ function closeSearchDropdown() {
     }
 }
 
+// Navigate to company from dropdown selection
 function goToCompany(index) {
     const marker = markers[index];
     if (marker) {
+        // Close any previously active marker
         if (activeMarker && activeMarker !== marker) {
             activeMarker.closePopup();
             const oldBubble = activeMarker._icon?.querySelector('.company-bubble');
@@ -326,52 +289,61 @@ function goToCompany(index) {
             }
         }
 
-        map.flyTo(marker.getLatLng(), 5, { duration: 1.2, easeLinearity: 0.25 });
+        // Navigate to the company marker
+        map.setView(marker.getLatLng(), 12);
         marker.openPopup();
         activeMarker = marker;
 
+        // Highlight the bubble
         const bubble = marker._icon?.querySelector('.company-bubble');
         if (bubble) {
             bubble.classList.add('highlighted');
         }
 
+        // Close dropdown and clear search input
         closeSearchDropdown();
         document.getElementById('searchInput').value = '';
+        
         console.log(`✅ Navigated to: ${marker.companyData.name}`);
     }
 }
 
+// Search with dropdown functionality - LIMITED TO 5 RESULTS
 function searchCompaniesWithDropdown(query) {
     const dropdown = document.getElementById('searchDropdown');
     query = query.toLowerCase().trim();
-
+    
+    // Clear previous highlights
     markers.forEach(marker => {
         const bubble = marker._icon?.querySelector('.company-bubble');
         if (bubble) {
             bubble.classList.remove('highlighted');
         }
     });
-
+    
     if (!query) {
         closeSearchDropdown();
+        console.log('🔍 Search cleared');
         updateCompanyCount(companiesOnMap.length);
         return;
     }
 
+    // Find matching companies
     const matches = [];
     markerData.forEach((company, index) => {
         const nameMatch = company.name.toLowerCase().includes(query);
         const cityMatch = company.city ? company.city.toLowerCase().includes(query) : false;
         const countryMatch = company.country.toLowerCase().includes(query);
-
+        
         if (nameMatch || cityMatch || countryMatch) {
             matches.push({ index, company });
         }
     });
 
+    // Show dropdown with matches - LIMIT TO 5 VISIBLE ITEMS
     if (matches.length > 0) {
         const displayMatches = matches.slice(0, 5);
-        dropdown.innerHTML = displayMatches.map((match) => `
+        dropdown.innerHTML = displayMatches.map((match, pos) => `
             <div class="dropdown-item" onclick="goToCompany(${match.index})" data-index="${match.index}">
                 <div class="dropdown-item-logo">
                     ${isImageUrl(match.company.logo) ? `<img src="${match.company.logo}" alt="logo">` : '<span>📌</span>'}
@@ -382,20 +354,23 @@ function searchCompaniesWithDropdown(query) {
                 </div>
             </div>
         `).join('');
-
+        
+        // Add "See more" indicator if there are more results
         if (matches.length > 5) {
             dropdown.innerHTML += `<div class="dropdown-see-more">... and ${matches.length - 5} more results. Keep typing to filter.</div>`;
         }
-
+        
         dropdown.classList.add('visible');
     } else {
         dropdown.innerHTML = '<div class="dropdown-empty">No companies found</div>';
         dropdown.classList.add('visible');
     }
 
+    console.log(`🔍 Found ${matches.length} matching companies (showing 5)`);
     updateCompanyCount(matches.length);
 }
 
+// Refresh data action command execution context properties
 async function refreshData() {
     if (isRefreshing) {
         console.warn('⚠️ Refresh already in progress');
@@ -405,17 +380,18 @@ async function refreshData() {
     try {
         isRefreshing = true;
         const refreshBtn = document.getElementById('refreshBtn');
-
+        
         console.log('🔄 Starting data refresh...');
-        setLoadingState('Refreshing company data...', 30);
         refreshBtn.disabled = true;
         refreshBtn.classList.add('loading');
         refreshBtn.textContent = 'Loading...';
 
+        // Wipe visual markers layer stack array references prior to fetching
         clearMap();
         document.getElementById('searchInput').value = '';
         closeSearchDropdown();
 
+        // Trigger dynamic spreadsheet content reloading endpoint reference
         await loadCompaniesFromGoogleSheets();
 
         if (companiesData.length === 0) {
@@ -425,13 +401,12 @@ async function refreshData() {
             refreshBtn.disabled = false;
             refreshBtn.classList.remove('loading');
             isRefreshing = false;
-            setLoadingState('No company data available.', 100);
             return;
         }
 
+        // Reassemble canvas marker element stack references
         addCompanyMarkers();
         updateCompanyCount(companiesOnMap.length);
-        setLoadingState('Map refreshed', 100);
 
         console.log('✅ Refresh completed successfully');
         refreshBtn.textContent = 'Refresh';
@@ -441,21 +416,25 @@ async function refreshData() {
     } catch (error) {
         console.error('❌ Error refreshing data:', error);
         alert('❌ Error refreshing data. Please try again.');
-
+        
         const refreshBtn = document.getElementById('refreshBtn');
         refreshBtn.textContent = 'Refresh';
         refreshBtn.disabled = false;
         refreshBtn.classList.remove('loading');
-        setLoadingState('Map refresh failed', 100);
+        
     } finally {
         isRefreshing = false;
     }
 }
 
+// Base operational standard DOM lifecycle listener context block
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🔄 Page loaded, initializing...');
+    
+    // Core map runtime execution launch
     initMap();
 
+    // Event listener connection context assignments
     const refreshBtn = document.getElementById('refreshBtn');
     if (refreshBtn) {
         refreshBtn.addEventListener('click', refreshData);
@@ -468,6 +447,7 @@ document.addEventListener('DOMContentLoaded', function() {
             searchCompaniesWithDropdown(e.target.value);
         });
         searchInput.addEventListener('blur', () => {
+            // Close dropdown after a short delay to allow clicks to register
             setTimeout(closeSearchDropdown, 200);
         });
         searchInput.addEventListener('focus', (e) => {
@@ -478,6 +458,7 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('✅ Search input listener attached');
     }
 
+    // Close dropdown when clicking outside
     document.addEventListener('click', (e) => {
         const searchWrapper = document.querySelector('.search-wrapper');
         if (searchWrapper && !searchWrapper.contains(e.target)) {
@@ -486,6 +467,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
+// Structural browser element resizing display update recalculations handlers
 window.addEventListener('resize', function() {
     if (map && mapInitialized) {
         map.invalidateSize();
